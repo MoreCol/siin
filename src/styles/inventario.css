@@ -1,0 +1,67 @@
+
+
+.table-header h2{
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.table-responsive{
+  overflow-x: auto;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+
+.inventario-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.inventario-table th {
+  text-align: left;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  padding: 1.25rem 1rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.inventario-table td {
+padding: 1.25rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+ vertical-align: middle;
+}
+
+.inventario-table tr:hover {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.tipo-badge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.tipo-badge.entrada {
+  background: rgba(34, 197, 94, 0.18);
+  color: #059669;
+}
+.tipo-badge.salida {
+  background: rgba(239, 68, 68, 0.18);
+  color: #dc2626;
+}
+.tipo-badge.ajuste {
+  background: rgba(251, 191, 36, 0.18);
+  color: #b45309;
+}

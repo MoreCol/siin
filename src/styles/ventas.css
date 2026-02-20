@@ -1,0 +1,227 @@
+.ventas-container{
+  margin-left: 200px;
+  margin-top: 12%;
+  min-height: calc(100vh - 70px);
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  max-width: 1600px;
+  width: calc(100vw - 240px);
+}
+
+.ventas-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+  gap: 2rem;
+}
+
+.ventas-title{
+  font-size: 2.3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.5rem 0;
+}
+
+.ventas-subtitle{
+  color: #64748b;
+  font-size: 1.1rem;
+  margin: 0;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.ventas-layout{
+  display: grid;
+  grid-template-columns: 0.95fr 1.25fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Card base */
+.ventas-form-container,
+.ventas-table-container{
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.ventas-form-title{
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.ventas-label{
+  display: block;
+  font-size: .9rem;
+  font-weight: 700;
+  color: #334155;
+  margin: .75rem 0 .35rem;
+}
+
+.ventas-input{
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.95);
+  outline: none;
+}
+
+.ventas-input:focus{
+  border-color: rgba(59,130,246,0.9);
+  box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+}
+
+.ventas-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.ventas-btn{
+  padding: 0.875rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ventas-btn-guardar{
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+.ventas-btn-cancelar{
+  background: #6b7280;
+  color: white;
+}
+.ventas-btn-crear{
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+}
+
+/* Table */
+.ventas-table-header h2{
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+  color: #123f8e;
+  font-weight: 800;
+}
+
+.ventas-table-responsive{
+  overflow-x: auto;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.ventas-table{
+  width: 100%;
+  border-collapse: collapse;
+  background: rgb(197, 34, 34);
+  border-radius: 1px;
+  overflow: hidden;
+  min-width: 760px;
+}
+
+.ventas-table th{
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  padding: 1.1rem 1rem;
+  text-align: left;
+  font-weight: 800;
+  color: #374151;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.ventas-table td{
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #0f172a;
+}
+
+.ventas-table tr:hover{
+  background: rgba(59,130,246,0.04);
+}
+
+.ventas-empty{
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.ventas-acciones{ white-space: nowrap; }
+
+.ventas-btn-accion{
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 1rem;
+  background: rgba(239,68,68,0.15);
+  color: #ef4444;
+}
+.ventas-btn-accion:hover{
+  background: #ef4444;
+  color: white;
+  transform: scale(1.08);
+}
+
+/* Badges */
+.ventas-badge{
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.ventas-badge.pendiente{ background: rgba(251,191,36,0.25); color: #b45309; }
+.ventas-badge.pagada{ background: rgba(34,197,94,0.2); color: #059669; }
+.ventas-badge.anulada{ background: rgba(239,68,68,0.2); color: #dc2626; }
+
+.ventas-table-footer{
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-content h2 {
+    margin: 0 0 18px 0;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: white;
+}
+
+.modal-content .productos-table{
+color: #161717;
+}
+
+/* Responsive */
+@media (max-width: 1024px){
+  .ventas-layout{ grid-template-columns: 1fr; }
+  .ventas-table{ min-width: 720px; }
+}

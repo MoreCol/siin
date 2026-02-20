@@ -1,0 +1,142 @@
+/* index.css */
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  background: #f5f5f5;
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* LOGIN WRAPPER - El contenedor padre */
+.login-wrapper {
+  height: 100%;
+  width: 400px;
+  display: flex;
+  justify-content: center;      /* Centra horizontalmente */
+  align-items: center;           /* Centra verticalmente */
+  padding: 20px;
+}
+
+/* LOGIN CARD - La tarjeta blanca */
+.login-card {
+  padding: 40px;
+  width: 100%;
+  max-width: 500px;              
+  border-radius: 10px;
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  background: #ffffff;
+}
+
+/* LOGIN CONTAINER - El contenedor de los campos */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.login-title {
+  color: #000;
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.login-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.login-fields input {
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+
+.login-fields input:focus {
+  outline: none;
+  border-color: #007BFF;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.login-button {
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: #007BFF;     /* Azul (según tu especificación SIIN) */
+  color: white;
+  transition: 0.3s;
+  width: 100%;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.login-button:hover {
+  background-color: #0056b3;     /* Azul oscuro al pasar mouse */
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.error-message {
+  color: #dc3545;                /* Rojo para errores (según SIIN) */
+  font-size: 0.85rem;
+  margin-top: 5px;
+  text-align: left;
+}
+
+.p-exito {
+  color: #28a745;                /* Verde para éxito */
+  font-weight: bold;
+  margin-top: 20px;
+  font-size: 15px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.login-card {
+  animation: fadeIn 0.3s ease-in;
+}
+
+

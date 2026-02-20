@@ -1,0 +1,28 @@
+:root {
+  --topbar-h: 70px;
+  --sidebar-w: 240px;
+}
+
+.app-content {
+  padding-top: var(--topbar-h); /* debajo del navbar fixed */
+  margin-left: var(--sidebar-w);
+  min-height: calc(100vh - var(--topbar-h));
+  overflow: visible;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 24px;
+  min-height: calc(100vh - var(--topbar-h));
+  width: 100%;
+  background-color: rgb(220, 223, 233);
+}
+
+/* Cuando tu sidebar se vuelve angosto en mobile */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-w: 70px;
+  }
+
+  .app-content {
+    margin-left: var(--sidebar-w);
+  }
+}

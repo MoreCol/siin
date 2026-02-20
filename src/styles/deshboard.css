@@ -1,0 +1,53 @@
+/* dashboard.css */
+
+/* Grid de KPIs / tarjetas */
+.dashboard-kpis{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Reutiliza tu .table-container como tarjeta base, solo ajusta spacing */
+.dashboard-card{
+  margin-bottom: 0; /* porque en grid no necesitamos margin-bottom */
+}
+
+/* Encabezado de tarjeta tipo KPI (título + acción a la derecha) */
+.dashboard-card-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+/* Número grande del KPI */
+.dashboard-kpi-value{
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 10px;
+}
+
+/* Texto secundario */
+.dashboard-kpi-subtitle{
+  opacity: 0.75;
+  margin-top: 10px;
+}
+
+/* Bloque de secciones (pedidos/ventas/etc) */
+.dashboard-section{
+  margin-top: 0;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px){
+  .dashboard-kpi-value{
+    font-size: 36px;
+  }
+
+  /* Si usas botones en header de KPI */
+  .dashboard-card-head .btn-producto{
+    width: auto;
+  }
+}
