@@ -1,28 +1,45 @@
 :root {
-  --topbar-h: 70px;
+  --topbar-h: 4rem;
   --sidebar-w: 240px;
 }
 
+
+
 .app-content {
-  padding-top: var(--topbar-h); /* debajo del navbar fixed */
+  
   margin-left: var(--sidebar-w);
-  min-height: calc(100vh - var(--topbar-h));
-  overflow: visible;
+  width: calc(100vw  - var(--sidebar-w));
+  min-width: 0;
+
+
+ padding-top: var(--topbar-h);
   padding-left: 16px;
   padding-right: 16px;
   padding-bottom: 24px;
-  min-height: calc(100vh - var(--topbar-h));
-  width: 100%;
+  
+
+  
   background-color: rgb(220, 223, 233);
+  box-sizing: border-box;
 }
 
 /* Cuando tu sidebar se vuelve angosto en mobile */
-@media (max-width: 768px) {
-  :root {
-    --sidebar-w: 70px;
+@media (max-width: 768px){
+  :root{
+    --sidebar-w: 0px;          /* ya no hay sidebar a la izquierda */
+    --sidebar-h-mobile: 64px;  /* altura de la barra */
   }
 
-  .app-content {
-    margin-left: var(--sidebar-w);
+  .app-content{
+    margin-left: 0;
+    width: 100%;
+    min-width: 0;
+
+    /* debajo del navbar + barra */
+    padding-top: calc(var(--topbar-h) + var(--sidebar-h-mobile));
+
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
+

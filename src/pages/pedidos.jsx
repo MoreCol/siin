@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import "../styles/shared.css";
 import "../styles/pedidos.css";
+import { MdAdd} from "react-icons/md";
 
 export default function Pedidos() {
  
@@ -41,7 +42,7 @@ export default function Pedidos() {
     const { name, value } = e.target;
 
     // Si cambia el código, opcionalmente sugerimos descripción del catálogo
-    if (name === "") {
+    if (name === "codigo") {
       const prod = catalogo.find((p) => p.codigo === value);
       setDraft((prev) => ({
         ...prev,
@@ -186,7 +187,7 @@ export default function Pedidos() {
     <div className="container">
       <div className="header">
         <div className="header-left">
-          <h1 className="pedidos-title">🧾 Pedidos</h1>
+          <h1 className="pedidos-title">Pedidos</h1>
         </div>
       </div>
 
@@ -202,7 +203,7 @@ export default function Pedidos() {
 
         <div className="filtros-der">
           <button className="btn-producto btn-nuevo" type="button" onClick={abrirModal}>
-            ➕ Agregar producto
+            <MdAdd className="add-icon"/> Agregar producto
           </button>
           <button
             className="btn-producto btn-nuevo"
@@ -386,17 +387,21 @@ export default function Pedidos() {
               />
 
               <label>Proveedor</label>
-              <select
+
+              <select 
+              
                 name="proveedorId"
                 value={draft.proveedorId}
                 onChange={onChangeDraft}
                 required
-              >
+              > 
+              <div className="select-content">
                 {proveedores.map((pr) => (
                   <option key={pr.id} value={pr.id}>
                     {pr.nombre}
                   </option>
                 ))}
+                </div>
               </select>
 
               <label>Cantidad</label>

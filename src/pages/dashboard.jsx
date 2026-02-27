@@ -38,7 +38,8 @@ export default function Dashboard() {
     <div className="container">
       <div className="header">
         <div className="header-left">
-          <h1>📊 Panel de control</h1>
+         
+          <h1> Dashboard</h1>
         </div>
       </div>
 

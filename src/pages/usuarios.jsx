@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import "../styles/usuarios.css";
 import "../styles/shared.css";
-
+import { MdEdit, MdDelete,MdAdd } from "react-icons/md";
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([
     {
@@ -80,7 +80,7 @@ export default function Usuarios() {
       <div className="header">
         <div className="header-left">
           <h1 className="usuarios-title">
-            👤 Usuarios <span></span>
+             Usuarios <span></span>
           </h1>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function Usuarios() {
           <button 
           className="btn-producto btn-nuevo" 
           onClick={abrirNuevo}>
-            ➕ Agregar usuario
+            <MdAdd className="add-icon"/> Agregar usuario
           </button>
         </div>
       </div>
@@ -144,14 +144,14 @@ export default function Usuarios() {
                       onClick={() => abrirEditar(u)}
                       title="Editar"
                     >
-                      ✏️
+                       <MdEdit/> 
                     </button>
                     <button
                       className="btn-accion eliminar"
                       onClick={() => eliminar(u.id)}
                       title="Eliminar"
                     >
-                      🗑️
+                       <MdDelete/> 
                     </button>
                   </td>
                 </tr>
@@ -206,9 +206,11 @@ export default function Usuarios() {
                 name="rol"
                 defaultValue={editing?.rol ?? "Cajero"}
               >
+              <div className="select-content"> 
                 <option value="Admin">Admin</option>
                 <option value="Cajero">Cajero</option>
-                <option value="Bodega">Bodega</option>
+                <option value="Bodega">Responsable Inventario</option>
+                </div>
               </select>
 
               <select
@@ -216,8 +218,10 @@ export default function Usuarios() {
                 name="estado"
                 defaultValue={editing?.estado ?? "Activo"}
               >
+                <div className="select-content"> 
                 <option value="Activo">Activo</option>
                 <option value="Inactivo">Inactivo</option>
+                    </div>
               </select>
 
               <div className="usuarios-modal-actions">

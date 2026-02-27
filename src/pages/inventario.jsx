@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import "../styles/shared.css";
 import "../styles/inventario.css";
-
+import { MdEdit, MdDelete,MdAdd } from "react-icons/md";
 
 export default function Inventario() {
   const [movimientos, setMovimientos] = useState([
@@ -18,15 +18,15 @@ export default function Inventario() {
     {
       id: 2,
       codigo: "P002",
-      nombre: "iPhone 15 Pro",
-      categoria: "Electrónicos",
+      nombre: "Lapiceros",
+      categoria: "Papelería",
       cantidad: 2,
       tipo: "Salida",
       fecha: "2026-02-08",
       usuario: "Juan S.",
     },
   ]);
- 
+
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -41,12 +41,8 @@ export default function Inventario() {
       ),
     );
   }, [movimientos, search]);
-  
 
-    
-  
-
-  const movimientoNuevo = (n) => {
+  const movimientoNuevo = () => {
     setEditing(null);
     setShowModal(true);
   };
@@ -59,35 +55,35 @@ export default function Inventario() {
   const eliminarMovimiento = (id) => {
     if (confirm("¿Deseas eliminar este movimiento?")) {
       setMovimientos((liActual) => liActual.filter((m) => m.id !== id));
-    
     }
   };
 
   const handleGuardar = (e) => {
-    e.preventDefault(); //evita sobrecargar 
-    const fd = new //crea nuevo formato 
-    FormData(e.target); // e es ele vento cuando 
+    e.preventDefault(); //evita sobrecargar
+    const fd = new //crea nuevo formato
+    FormData(e.target); // e es ele vento cuando
     // hacemos submit y e.preventdefault apunta al formulario
 
-//formaData es un objeto de JavaScriptque 
-// sirve opara leer todos los campos de un formulario. evitamos usar hook
+    //formaData es un objeto de JavaScriptque
+    // sirve opara leer todos los campos de un formulario. evitamos usar hook
     const nuevo = {
       id: editing ? editing.id : Date.now(), //si el id concide con el id que queremos editar
-      //nos crea una nueva fila y limpiamos con trim 
+      //nos crea una nueva fila y limpiamos con trim
       tipo: fd.get("tipo"),
       codigo: fd.get("codigo").trim(),
       nombre: fd.get("nombre").trim(),
       categoria: fd.get("categoria").trim(),
-      cantidad: Number(fd.get("cantidad")), //al usar formaData, solo trabajamos con strings 
-      
+      cantidad: Number(fd.get("cantidad")), //al usar formaData, solo trabajamos con strings
+
       fecha: fd.get("fecha"),
       usuario: fd.get("usuario").trim(),
     };
 
     setMovimientos((liActual) => {
       //Si el id coincide con el que estamos editando reemplaza con el objeto nuevo que creaste
-      if (editing) return liActual.map((m) => (m.id === editing.id ? nuevo : m));
-      return [nuevo, ...liActual];   //VISUALZIAMOS EL EVENTO AGREGADO PRIMERO EN LA LISTA 
+      if (editing)
+        return liActual.map((m) => (m.id === editing.id ? nuevo : m));
+      return [nuevo, ...liActual]; //VISUALZIAMOS EL EVENTO AGREGADO PRIMERO EN LA LISTA
     });
 
     setShowModal(false);
@@ -99,7 +95,7 @@ export default function Inventario() {
     <div className="container">
       <div className="header">
         <div className="header-left">
-          <h1 className="inventario-title">📋 Inventario</h1>
+          <h1 className="inventario-title">Inventario</h1>
         </div>
       </div>
 
@@ -114,7 +110,8 @@ export default function Inventario() {
         </div>
         <div className="filtros-der">
           <button className="btn-producto btn-nuevo" onClick={movimientoNuevo}>
-            ➕ Agregar movimiento
+            <MdAdd className="add-icon" />
+            Agregar movimiento
           </button>
         </div>
       </div>
@@ -162,14 +159,14 @@ export default function Inventario() {
                       onClick={() => editarMovimiento(m)}
                       title="Editar"
                     >
-                      ✏️
+                      <MdEdit />
                     </button>
                     <button
                       className="btn-accion eliminar"
                       onClick={() => eliminarMovimiento(m.id)}
                       title="Eliminar"
                     >
-                      🗑️
+                      <MdDelete />
                     </button>
                   </td>
                 </tr>
@@ -199,9 +196,11 @@ export default function Inventario() {
                 defaultValue={editing?.tipo ?? "Entrada"}
                 required
               >
-                <option value="Entrada">Entrada</option>
-                <option value="Salida">Salida</option>
-                <option value="Ajuste">Ajuste</option>
+                <div className="select-content">
+                  <option value="Entrada">Entrada</option>
+                  <option value="Salida">Salida</option>
+                  <option value="Ajuste">Ajuste</option>
+                </div>
               </select>
 
               <input

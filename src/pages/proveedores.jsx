@@ -1,39 +1,36 @@
-import { useMemo, useState } from "react";
-import "../styles/shared.css";
-import "../styles/proveedores.css";
-
+import { useMemo, useState } from 'react';
+import '../styles/shared.css';
+import '../styles/Proveedores.css';
+import { MdEdit, MdDelete } from 'react-icons/md';
 export default function Proveedores() {
   const [proveedores, setProveedores] = useState([
     {
       id: 1,
-      nit: "900123456-7",
-      nombre: "Distribuidora Andina",
-      telefono: "3105551234",
-      email: "contacto@andina.com",
-      estado: "Activo",
+      nit: '900123456-7',
+      nombre: 'Papelería Escobar',
+      telefono: '3105551234',
+      email: 'escobar@gmail.com',
+      estado: 'Activo'
     },
     {
       id: 2,
-      nit: "800987654-1",
-      nombre: "TecnoProveedores SAS",
-      telefono: "3204448899",
-      email: "ventas@tecnopro.com",
-      estado: "Activo",
-    },
-    
+      nit: '800987654-1',
+      nombre: 'Grafitos',
+      telefono: '3204448899',
+      email: 'grafitos@gmail.com',
+      estado: 'Activo'
+    }
   ]);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
 
   const filteredProv = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return proveedores;
-    return proveedores.filter((p) =>
-      [p.nit, p.nombre, p.telefono, p.email, p.estado].some((v) =>
-        String(v).toLowerCase().includes(q),
-      ),
+    return proveedores.filter(p =>
+      [p.nit, p.nombre, p.telefono, p.email, p.estado].some(v => String(v).toLowerCase().includes(q))
     );
   }, [proveedores, search]);
 
@@ -42,32 +39,32 @@ export default function Proveedores() {
     setShowModal(true);
   };
 
-  const abrirEditar = (p) => {
+  const abrirEditar = p => {
     setEditing(p);
     setShowModal(true);
   };
 
-  const eliminar = (id) => {
-    if (confirm("¿Eliminar este proveedor?")) {
-      setProveedores((prev) => prev.filter((p) => p.id !== id));
+  const eliminar = id => {
+    if (confirm('¿Eliminar este proveedor?')) {
+      setProveedores(prev => prev.filter(p => p.id !== id));
     }
   };
 
-  const handleGuardar = (e) => {
+  const handleGuardar = e => {
     e.preventDefault();
     const fd = new FormData(e.target);
 
     const nuevo = {
       id: editing ? editing.id : Date.now(),
-      nit: fd.get("nit")?.toString().trim(),
-      nombre: fd.get("nombre")?.toString().trim(),
-      telefono: fd.get("telefono")?.toString().trim(),
-      email: fd.get("email")?.toString().trim(),
-      estado: fd.get("estado")?.toString().trim() || "Activo",
+      nit: fd.get('nit')?.toString().trim(),
+      nombre: fd.get('nombre')?.toString().trim(),
+      telefono: fd.get('telefono')?.toString().trim(),
+      email: fd.get('email')?.toString().trim(),
+      estado: fd.get('estado')?.toString().trim() || 'Activo'
     };
 
-    setProveedores((prev) => {
-      if (editing) return prev.map((p) => (p.id === editing.id ? nuevo : p));
+    setProveedores(prev => {
+      if (editing) return prev.map(p => (p.id === editing.id ? nuevo : p));
       return [nuevo, ...prev];
     });
 
@@ -81,7 +78,7 @@ export default function Proveedores() {
       <div className="header">
         <div className="header-left">
           <h1 className="proveedores-title">
-            🏪 Proveedores <span></span>
+            Proveedores <span></span>
           </h1>
         </div>
       </div>
@@ -92,15 +89,12 @@ export default function Proveedores() {
             className="filtro-input "
             placeholder="🔍 Buscar por NIT, nombre, teléfono, email..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
           />
         </div>
 
         <div className="filtros-der">
-          <button
-            className="btn-producto btn-nuevo"
-            onClick={abrirNuevo}
-          >
+          <button className="btn-producto btn-nuevo" onClick={abrirNuevo}>
             ➕ Agregar proveedor
           </button>
         </div>
@@ -125,7 +119,7 @@ export default function Proveedores() {
             </thead>
 
             <tbody>
-              {filteredProv.map((p) => (
+              {filteredProv.map(p => (
                 <tr key={p.id}>
                   <td>
                     <code>{p.nit}</code>
@@ -134,26 +128,14 @@ export default function Proveedores() {
                   <td>{p.telefono}</td>
                   <td>{p.email}</td>
                   <td>
-                    <span
-                      className={`proveedores-badge ${p.estado.toLowerCase()}`}
-                    >
-                      {p.estado}
-                    </span>
+                    <span className={`proveedores-badge ${p.estado.toLowerCase()}`}>{p.estado}</span>
                   </td>
                   <td className="acciones-cell">
-                    <button
-                      className="btn-accion editar"
-                      onClick={() => abrirEditar(p)}
-                      title="Editar"
-                    >
-                      ✏️
+                    <button className="btn-accion editar" onClick={() => abrirEditar(p)} title="Editar">
+                      <MdEdit className="add-icon" />
                     </button>
-                    <button
-                      className="btn-accion eliminar"
-                      onClick={() => eliminar(p.id)}
-                      title="Eliminar"
-                    >
-                      🗑️
+                    <button className="btn-accion eliminar" onClick={() => eliminar(p.id)} title="Eliminar">
+                      <MdDelete />
                     </button>
                   </td>
                 </tr>
@@ -172,12 +154,12 @@ export default function Proveedores() {
       {showModal && (
         <div
           className="modal-overlay"
-          onClick={(e) => {
+          onClick={e => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
         >
           <div className="modal-content">
-            <h2>{editing ? "Editar" : "Nuevo"} proveedor</h2>
+            <h2>{editing ? 'Editar' : 'Nuevo'} proveedor</h2>
             <h4 className="proveedores-modal-subtitle">Ingresar Campos</h4>
 
             <form onSubmit={handleGuardar}>
@@ -209,27 +191,18 @@ export default function Proveedores() {
                 defaultValue={editing?.email}
               />
 
-              <select
-                name="estado"
-                className="proveedores-modal-input"
-                defaultValue={editing?.estado ?? "Activo"}
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
+              <select name="estado" className="proveedores-modal-input" defaultValue={editing?.estado ?? 'Activo'}>
+                <div className="select-content">
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                </div>
               </select>
 
               <div className="proveedores-modal-actions">
-                <button
-                  type="button"
-                  className="btn-cancelar"
-                  onClick={() => setShowModal(false)}
-                >
+                <button type="button" className="btn-cancelar" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  className="btn-guardar"
-                >
+                <button type="submit" className="btn-guardar">
                   Guardar
                 </button>
               </div>

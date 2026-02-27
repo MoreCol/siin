@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import "../styles/shared.css";
 import "../styles/ventas.css"; // opcional (puede estar vacío si no quieres extra)
+import { MdAdd} from "react-icons/md";
 
 export default function Ventas() {
   // Catálogo demo (puedes conectarlo con tu módulo Productos)
@@ -191,7 +192,7 @@ export default function Ventas() {
     <div className="container">
       <div className="header">
         <div className="header-left">
-          <h1>💰 Ventas</h1>
+          <h1>Ventas</h1>
         </div>
       </div>
 
@@ -211,7 +212,7 @@ export default function Ventas() {
             type="button"
             onClick={abrirCrearVenta}
           >
-            ➕ Crear venta
+           <MdAdd className="add-icon" />Crear venta
           </button>
         </div>
       </div>
@@ -319,8 +320,7 @@ export default function Ventas() {
               </div>
             </div>
 
-            
-
+        
             {/* Agregar producto a factura */}
             <form onSubmit={agregarItem}>
               <div className="form-row">

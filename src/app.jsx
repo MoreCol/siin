@@ -1,15 +1,18 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Productos from "./pages/productos";
-import Pedidos from "./pages/pedidos";
-import Ventas from "./pages/ventas";
-import Usuarios from "./pages/usuarios";
-import Proveedores from "./pages/Proveedores";
-import Inventario from "./pages/inventario";
-import Dashboard from "./pages/dashboard";
-import { Login } from "./pages/Login";
-import { AppLayout } from "./layouts/AppLayout";
-import "./styles/shared.css";
-import "./styles/navbar.css";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import Productos from './pages/productos';
+import Pedidos from './pages/pedidos';
+import Ventas from './pages/ventas';
+import Usuarios from './pages/usuarios';
+import Proveedores from './pages/proveedores';
+import Inventario from './pages/inventario';
+import Dashboard from './pages/dashboard';
+import Login from './pages/Login';
+import { AppLayout } from './layouts/AppLayout';
+
+import './styles/layout.css';
+import './styles/shared.css';
+import './styles/navbar.css';
 
 export function App() {
   return (
@@ -25,11 +28,7 @@ export function App() {
           <Route path="/ventas" element={<Ventas />} />
           <Route path="/proveedores" element={<Proveedores />} />
           <Route path="/usuarios" element={<Usuarios />} />
-
-          
         </Route>
-
-        <Route />
       </Routes>
     </BrowserRouter>
   );

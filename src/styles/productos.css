@@ -8,17 +8,23 @@
 
 .table-responsive {
   overflow-x: auto;
+  width: 100%;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
+
 }
 
 .productos-table {
-  width: 100%;
+ 
   border-collapse: collapse;
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  min-width: 800px;
+  width: 100%;
+  min-width: 900px;
+
 }
 .productos-table th {
   background: linear-gradient(135deg, #f8fafc, #f1f5f9);
@@ -156,6 +162,7 @@
 
 
 @media (max-width: 768px) {
+  
   .productos-table th:nth-child(1),
   .productos-table td:nth-child(1) { display: none; } /* Oculta código mobile */
   

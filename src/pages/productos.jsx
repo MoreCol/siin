@@ -1,34 +1,33 @@
-import { useState, useEffect, useMemo } from "react";
-import "../styles/inventario.css";
-import "../styles/productos.css";
-import ProductoModal from "../components/ProductoModal";
+import { useState, useMemo } from 'react';
+import '../styles/inventario.css';
+import '../styles/productos.css';
+import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import ProductoModal from '../components/ProductoModal';
 
 export default function Productos() {
   const [ListaProductos, setProductos] = useState([
     {
       id: 1,
-      codigo: "P001",
-      categoria: "Papelería",
+      codigo: 'P001',
+      categoria: 'Papelería',
       precio: 4500,
       stock: 25,
-      estado: "Activo",
-      descripcion: "Cuaderno Espiral",
-      imagen: "https://via.placeholder.com/300x200/667eea/ffffff?text=Cuaderno",
+      estado: 'Activo',
+      descripcion: 'Cuaderno Espiral',
+      imagen: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Cuaderno'
     },
     {
       id: 2,
-      codigo: "P002",
-      descripcion: "iPhone 15 Pro",
-      categoria: "Papelería",
-      precio: 4299000,
+      codigo: 'P002',
+      descripcion: 'Lapiceros',
+      categoria: 'Papelería',
+      precio: 900,
       stock: 3,
-      estado: "Bajo",
-      imagen: "https://via.placeholder.com/300x200/764ba2/ffffff?text=iPhone",
-    },
-   
-    
+      estado: 'Bajo',
+      imagen: 'https://via.placeholder.com/300x200/764ba2/ffffff?text=iPhone'
+    }
   ]);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
@@ -36,50 +35,48 @@ export default function Productos() {
     const q = search.trim().toLowerCase();
     if (!q) return ListaProductos;
 
-    return ListaProductos.filter((p) =>
-      [p.codigo, p.descripcion, p.categoria, p.precio, p.stock, p.estado].some(
-        (v) => String(v).toLowerCase().includes(q),
-      ),
+    return ListaProductos.filter(p =>
+      [p.codigo, p.descripcion, p.categoria, p.precio, p.stock, p.estado].some(v => String(v).toLowerCase().includes(q))
     );
   }, [ListaProductos, search]);
 
-  const getStockClass = (stock) => {
+  const getStockClass = stock => {
     //recibe el parametro stock
-    if (stock === 0) return "agotado"; //condicional específico
-    if (stock < 5) return "bajo"; // condicionales generales
-    return "disponible";
+    if (stock === 0) return 'agotado'; //condicional específico
+    if (stock < 5) return 'bajo'; // condicionales generales
+    return 'disponible';
   };
 
-  const editarProducto = (producto) => {
+  const editarProducto = producto => {
     // recibe parametro producto
     setEditingProduct(producto); //se va a guardar el estado del producto que vamos a editar por eso usamos useState
     setShowModal(true); //abre el modal
   };
 
-  const eliminarProducto = (id) => {
-    if (confirm("¿Deseas eliminar este producto?")) {
-      setProductos(ListaProductos.filter((p) => p.id !== id)); // !p.id (es diferente) si es el mismo da false y elimina
+  const eliminarProducto = id => {
+    if (confirm('¿Deseas eliminar este producto?')) {
+      setProductos(ListaProductos.filter(p => p.id !== id)); // !p.id (es diferente) si es el mismo da false y elimina
       //quedate con el producto que el id sea estrictamente diferente al id que quiero eliminar
     }
   };
 
-  const handleGuardar = (e) => {
+  const handleGuardar = e => {
     e.preventDefault();
     const fd = new FormData(e.target);
 
     const nuevo = {
       id: editingProduct ? editingProduct.id : Date.now(),
-      codigo: String(fd.get("codigo")).trim(),
-      descripcion: String(fd.get("descripcion")).trim(),
-      categoria: String(fd.get("categoria")).trim(),
-      precio: Number(fd.get("precio")),
-      stock: Number(fd.get("stock")),
-      estado: String(fd.get("estado")).trim(),
+      codigo: String(fd.get('codigo')).trim(),
+      descripcion: String(fd.get('descripcion')).trim(),
+      categoria: String(fd.get('categoria')).trim(),
+      precio: Number(fd.get('precio')),
+      stock: Number(fd.get('stock')),
+      estado: String(fd.get('estado')).trim()
     };
 
-    setProductos((prev) => {
+    setProductos(prev => {
       if (editingProduct) {
-        return prev.map((p) => (p.id === editingProduct.id ? nuevo : p));
+        return prev.map(p => (p.id === editingProduct.id ? nuevo : p));
       }
       return [nuevo, ...prev]; // agrega al inicio
     });
@@ -92,7 +89,7 @@ export default function Productos() {
     <div className="container">
       <div className="header">
         <div className="header-left">
-          <h1 className="productos-title">📦 Productos</h1>
+          <h1 className="productos-title">Productos</h1>
         </div>
       </div>
 
@@ -103,7 +100,7 @@ export default function Productos() {
             placeholder="🔍 Buscar por descripción/código..."
             value={search}
             onChange={(
-              e, //evento
+              e //evento
             ) => setSearch(e.target.value)} //el texto que hay dentro del input, se giuarda en el estado
           />
         </div>
@@ -115,7 +112,8 @@ export default function Productos() {
               setShowModal(true);
             }}
           >
-            ➕ Nuevo Producto
+            <MdAdd className="add-icon" />
+            Nuevo Producto
           </button>
         </div>
       </div>
@@ -143,14 +141,11 @@ export default function Productos() {
             <tbody>
               {filteredProductos.map(
                 (
-                  producto, //eventoque se usa en arrays recorre una lista y trasforma los elementos en algo nuevo
+                  producto //eventoque se usa en arrays recorre una lista y trasforma los elementos en algo nuevo
                 ) => (
                   //por cada producto crea una fila
                   //key = llave unica
-                  <tr
-                    key={producto.id}
-                    className={getStockClass(producto.stock)}
-                  >
+                  <tr key={producto.id} className={getStockClass(producto.stock)}>
                     <td>
                       <code>#{producto.codigo}</code>
                     </td>
@@ -158,53 +153,37 @@ export default function Productos() {
                     <td>{producto.descripcion}</td>
 
                     <td>
-                      <span className="categoria-badge">
-                        {producto.categoria}
-                      </span>
+                      <span className="">{producto.categoria}</span>
                     </td>
 
                     <td>{producto.precio.toLocaleString()}</td>
 
                     <td className="stock-cell">
-                      <span
-                        className={`stock-indicator ${getStockClass(producto.stock)}`}
-                      >
-                        {producto.stock === 0
-                          ? "0"
-                          : producto.stock < 5
-                            ? `${producto.stock} `
-                            : `${producto.stock} `}
+                      <span className={`stock-indicator ${getStockClass(producto.stock)}`}>
+                        {producto.stock === 0 ? '0' : producto.stock < 5 ? `${producto.stock} ` : `${producto.stock} `}
                       </span>
                     </td>
 
                     <td>{producto.stock}</td>
 
                     <td>
-                      <span
-                        className={`estado-badge ${producto.estado.toLowerCase()}`}
-                      >
-                        {producto.estado}
-                      </span>
+                      <span className={`estado-badge ${producto.estado.toLowerCase()}`}>{producto.estado}</span>
                     </td>
 
                     <td className="acciones-cell">
-                      <button
-                        className="btn-accion editar"
-                        onClick={() => editarProducto(producto)}
-                        title="Editar"
-                      >
-                        ✏️
+                      <button className="btn-accion editar" onClick={() => editarProducto(producto)} title="Editar">
+                        <MdEdit />
                       </button>
                       <button
                         className="btn-accion eliminar"
                         onClick={() => eliminarProducto(producto.id)}
                         title="Eliminar"
                       >
-                        🗑️
+                        <MdDelete />
                       </button>
                     </td>
                   </tr>
-                ),
+                )
               )}
             </tbody>
           </table>
@@ -215,78 +194,31 @@ export default function Productos() {
         </div>
       </div>
 
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <div className="modal-content">
-            <h2>{editingProduct ? "Editar" : "Formulario"} Producto </h2>
-            <h4 className="subtitle"> Ingresar Campos</h4>
+      <ProductoModal
+        open={showModal}
+        editingProduct={editingProduct}
+        onGuardar={data => {
+          const nuevo = {
+            id: editingProduct ? editingProduct.id : Date.now(),
+            ...data, // {codigo, descripcion, categoria, precio, stock, estado}
+            imagen: editingProduct?.imagen ?? 'https://via.placeholder.com/300x200/667eea/ffffff?text=Producto'
+          };
 
-            <form onSubmit={handleGuardar}>
-              <input
-                name="codigo"
-                placeholder="Código"
-                defaultValue={editingProduct?.codigo ?? ""} // ?. significa " si editingProduct existe, usa su código"
-                required
-              />
-              <input
-                name="descripcion"
-                placeholder="Descripción"
-                defaultValue={editingProduct?.descripcion ?? ""}
-                required
-              />
-              <select
-                name="categoria"
-                defaultValue={editingProduct?.categoria ?? "Papelería"}
-                required
-              >
-                <option value="Papelería">Papelería</option>
-              </select>
+          setProductos(prev => {
+            if (editingProduct) {
+              return prev.map(p => (p.id === editingProduct.id ? nuevo : p));
+            }
+            return [nuevo, ...prev];
+          });
 
-              <input
-                type="number"
-                name="precio"
-                placeholder="Precio"
-                defaultValue={editingProduct?.precio ?? ""}
-                required
-              />
-              <input
-                type="number"
-                name="stock"
-                placeholder="Stock Incial"
-                defaultValue={editingProduct?.stock ?? ""}
-                required
-              />
-              <select
-                name="estado"
-                defaultValue={editingProduct?.estado ?? "Activo"}
-                required
-              >
-                <option value="Activo">Activo</option>
-                <option value="Bajo">Bajo</option>
-                <option value="Agotado">Agotado</option>
-              </select>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-cancelar"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-guardar">
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          setEditingProduct(null);
+          setShowModal(false);
+        }}
+        onClose={() => {
+          setShowModal(false);
+          setEditingProduct(null);
+        }}
+      />
     </div>
   );
 }
