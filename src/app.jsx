@@ -7,7 +7,7 @@ import Usuarios from './pages/usuarios';
 import Proveedores from './pages/proveedores';
 import Inventario from './pages/inventario';
 import Dashboard from './pages/dashboard';
-import Login from './pages/Login';
+import Login from './pages/login';
 import { AppLayout } from './layouts/AppLayout';
 
 import './styles/layout.css';
