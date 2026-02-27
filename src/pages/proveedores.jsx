@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import '../styles/shared.css';
-import '../styles/Proveedores.css';
+import '../styles/proveedores.css';
 import { MdEdit, MdDelete } from 'react-icons/md';
 export default function Proveedores() {
   const [proveedores, setProveedores] = useState([
