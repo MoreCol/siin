@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import "../styles/shared.css";
-import "../styles/dashboard.css"; // opcional si quieres ajustar grid, si no, omítelo
+import "../styles/dashboard.css"; // 
 
 export default function Dashboard() {
-  // Datos demo (después los reemplazas por tus estados reales o API)
+ 
   const productos = [
     
   ];
@@ -17,15 +17,14 @@ export default function Dashboard() {
     
   ];
 
-  // KPIs
+
   const totalProductos = useMemo(() => productos.length, [productos]);
 
   const bajoStock = useMemo(() => {
     return productos.filter(p => p.stock <= p.stockMin);
   }, [productos]);
 
-  // “Ingresos por categoría” (demo: suma de ventas por categoría ficticia)
-  // Si aún no tienes categorías en ventas, puedes cambiarlo por "Productos por categoría"
+ 
   const productosPorCategoria = useMemo(() => {
     const map = new Map();
     for (const p of productos) {

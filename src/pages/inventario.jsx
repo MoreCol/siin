@@ -1,95 +1,138 @@
-import { useMemo, useState } from "react";
-import "../styles/shared.css";
-import "../styles/inventario.css";
-import { MdEdit, MdDelete,MdAdd } from "react-icons/md";
+import { useState, useMemo, useEffect } from 'react';
+import axios from 'axios';
+import '../styles/inventario.css';
+import '../styles/productos.css';
+import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+
+const API_URL = 'http://localhost:3000/api/inventario'; // ← CAMBIO
 
 export default function Inventario() {
-  const [movimientos, setMovimientos] = useState([
-    {
-      id: 1,
-      codigo: "P001",
-      nombre: "Cuaderno espiral",
-      categoria: "Papelería",
-      cantidad: 10,
-      tipo: "Entrada",
-      fecha: "2026-02-01",
-      usuario: "Juan S.",
-    },
-    {
-      id: 2,
-      codigo: "P002",
-      nombre: "Lapiceros",
-      categoria: "Papelería",
-      cantidad: 2,
-      tipo: "Salida",
-      fecha: "2026-02-08",
-      usuario: "Juan S.",
-    },
-  ]);
-
-  const [search, setSearch] = useState("");
+  const [ListaInventarios, setListaInventarios] = useState([]); // ← Plural
+  const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
+  const [editingInvent, setEditingInvent] = useState(null); // ← Invent
+  const [loading, setLoading] = useState(true);
+  const [productos, setProductos] = useState([]); // ← Para select
 
-  const filteredMovimientos = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return movimientos;
+  useEffect(() => {
+    cargarInventarios();
+    cargarProductos(); // ← Cargar para select
+  }, []);
 
-    return movimientos.filter((m) =>
-      [m.codigo, m.nombre, m.categoria, m.tipo, m.fecha, m.usuario].some((v) =>
-        String(v).toLowerCase().includes(q),
-      ),
-    );
-  }, [movimientos, search]);
+  const cargarInventarios = async () => {
+    console.log('🔄 Cargando inventarios...');
+    try {
+      const res = await axios.get(API_URL);
+      console.log('✅ Respuesta inventarios:', res.data);
 
-  const movimientoNuevo = () => {
-    setEditing(null);
-    setShowModal(true);
-  };
-
-  const editarMovimiento = (mov) => {
-    setEditing(mov);
-    setShowModal(true);
-  };
-
-  const eliminarMovimiento = (id) => {
-    if (confirm("¿Deseas eliminar este movimiento?")) {
-      setMovimientos((liActual) => liActual.filter((m) => m.id !== id));
+      const inventariosFormateados = res.data.map(i => ({
+        id_movimiento: i.id_movimiento, // ← PK backend
+        id_producto: i.id_producto,
+        producto_descripcion: i.producto?.descripcion || 'Sin producto',
+        id_usuario: i.id_usuario,
+        tipo_movimiento: i.tipo_movimiento,
+        cantidad: Number(i.cantidad),
+        fecha_movimiento: i.fecha_movimiento || i.fecha_moviento,
+        descripcion: i.descripcion || ''
+      }));
+      setListaInventarios(inventariosFormateados);
+    } catch (error) {
+      console.error('❌ Error cargando inventarios:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleGuardar = (e) => {
-    e.preventDefault(); //evita sobrecargar
-    const fd = new //crea nuevo formato
-    FormData(e.target); // e es ele vento cuando
-    // hacemos submit y e.preventdefault apunta al formulario
+  const cargarProductos = async () => {
+    try {
+      const res = await axios.get('http://localhost:3000/api/products');
+      setProductos(res.data);
+    } catch (error) {
+      console.error('Error productos:', error);
+    }
+  };
 
-    //formaData es un objeto de JavaScriptque
-    // sirve opara leer todos los campos de un formulario. evitamos usar hook
-    const nuevo = {
-      id: editing ? editing.id : Date.now(), //si el id concide con el id que queremos editar
-      //nos crea una nueva fila y limpiamos con trim
-      tipo: fd.get("tipo"),
-      codigo: fd.get("codigo").trim(),
-      nombre: fd.get("nombre").trim(),
-      categoria: fd.get("categoria").trim(),
-      cantidad: Number(fd.get("cantidad")), //al usar formaData, solo trabajamos con strings
+  const filteredInventarios = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return ListaInventarios;
 
-      fecha: fd.get("fecha"),
-      usuario: fd.get("usuario").trim(),
+    return ListaInventarios.filter(i =>
+      [i.id_movimiento, i.producto_descripcion, i.tipo_movimiento, i.cantidad, i.descripcion].some(v =>
+        String(v).toLowerCase().includes(q)
+      )
+    );
+  }, [ListaInventarios, search]);
+
+  const editarInvent = invent => {
+    setEditingInvent(invent);
+    setShowModal(true);
+  };
+
+  const eliminarInvent = async id_movimiento => {
+    if (!confirm('¿Eliminar este movimiento?')) return;
+
+    try {
+      await axios.delete(`${API_URL}/${id_movimiento}`);
+      setListaInventarios(prev => prev.filter(i => i.id_movimiento !== id_movimiento));
+    } catch (error) {
+      alert('Error eliminando');
+      cargarInventarios();
+    }
+  };
+
+  const handleGuardar = async e => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+
+    const inventData = {
+      id_producto: Number(fd.get('id_producto')),
+
+      id_usuario: Number(fd.get('id_usuario')),
+      tipo_movimiento: String(fd.get('tipo_movimiento')).trim(),
+      cantidad: Number(fd.get('cantidad')),
+      fecha_movimiento: fd.get('fecha_movimiento'), // ← FALTABA
+      descripcion: String(fd.get('descripcion')).trim()
     };
 
-    setMovimientos((liActual) => {
-      //Si el id coincide con el que estamos editando reemplaza con el objeto nuevo que creaste
-      if (editing)
-        return liActual.map((m) => (m.id === editing.id ? nuevo : m));
-      return [nuevo, ...liActual]; //VISUALZIAMOS EL EVENTO AGREGADO PRIMERO EN LA LISTA
+    console.log('INVENTDATA PARSED =>', inventData);
+    console.log('VALIDATION =>', {
+      id_producto: Number.isNaN(inventData.id_producto),
+      id_usuario: Number.isNaN(inventData.id_usuario),
+      cantidad: Number.isNaN(inventData.cantidad),
+      tipo_movimiento: inventData.tipo_movimiento,
+      descripcion: inventData.descripcion
     });
 
-    setShowModal(false);
-    setEditing(null);
-    e.target.reset();
+    console.log('VALOR SELECT:', fd.get('id_producto'));
+
+    /*if (!inventData.id_producto || Number.isNaN(inventData.id_producto)) {
+      alert('Selecciona un producto válido');
+      return;
+    }*/
+
+    try {
+      if (editingInvent) {
+        await axios.put(`${API_URL}/${editingInvent.id_movimiento}`, inventData);
+        console.log('✅ Inventario actualizado');
+      } else {
+        await axios.post(API_URL, inventData);
+        console.log('✅ Nuevo movimiento creado');
+      }
+
+      await cargarInventarios();
+      setEditingInvent(null);
+      setShowModal(false);
+      e.target.reset();
+    } catch (error) {
+      console.error('❌ ERROR COMPLETO:', error);
+      console.error('❌ RESPONSE DATA:', error.response?.data);
+      console.error('❌ STATUS:', error.response?.status);
+
+      alert(error.response?.data?.message || 'No se pudo guardar');
+    }
   };
+
+  if (loading) return <div className="loading">Cargando inventarios...</div>;
 
   return (
     <div className="container">
@@ -105,11 +148,18 @@ export default function Inventario() {
             className="filtro-input search-global"
             placeholder="🔍 Buscar por código, nombre, tipo, fecha, usuario..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
           />
         </div>
+
         <div className="filtros-der">
-          <button className="btn-producto btn-nuevo" onClick={movimientoNuevo}>
+          <button
+            className="btn-producto btn-nuevo"
+            onClick={() => {
+              setEditingInvent(null);
+              setShowModal(true);
+            }}
+          >
             <MdAdd className="add-icon" />
             Agregar movimiento
           </button>
@@ -124,46 +174,33 @@ export default function Inventario() {
           <table className="inventario-table">
             <thead>
               <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Cantidad</th>
+                <th>Producto</th>
+                <th>Usuario</th>
                 <th>Tipo de movimiento</th>
+                <th>Cantidad</th>
                 <th>Fecha de movimiento</th>
-                <th>Usuario res</th>
-                <th>Acción</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredMovimientos.map((m) => (
-                <tr key={m.id}>
-                  <td>
-                    <code>#{m.codigo}</code>
-                  </td>
-                  <td>{m.nombre}</td>
-                  <td>{m.categoria}</td>
+              {filteredInventarios.map(m => (
+                <tr key={m.id_movimiento}>
+                  <td>{m.producto_descripcion}</td>
+                  <td>{m.id_usuario}</td>
+                  <td>{m.tipo_movimiento}</td>
                   <td>{m.cantidad}</td>
-                  <td>
-                    <span
-                      className={`tipo-badge ${String(m.tipo ?? "").toLowerCase()}`}
-                    >
-                      {m.tipo}
-                    </span>
-                  </td>
-                  <td>{m.fecha}</td>
-                  <td>{m.usuario}</td>
+                  <td>{new Date(m.fecha_movimiento).toLocaleDateString()}</td>
+                  <td>{m.descripcion}</td>
+
                   <td className="acciones-cell">
-                    <button
-                      className="btn-accion editar"
-                      onClick={() => editarMovimiento(m)}
-                      title="Editar"
-                    >
+                    <button className="btn-accion editar" onClick={() => editarInvent(m)} title="Editar">
                       <MdEdit />
                     </button>
                     <button
                       className="btn-accion eliminar"
-                      onClick={() => eliminarMovimiento(m.id)}
+                      onClick={() => eliminarInvent(m.id_movimiento)}
                       title="Eliminar"
                     >
                       <MdDelete />
@@ -182,71 +219,67 @@ export default function Inventario() {
       {showModal && (
         <div
           className="modal-overlay"
-          onClick={(e) => {
+          onClick={e => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
         >
           <div className="modal-content">
-            <h2>{editing ? "Editar" : "Nuevo"} movimiento</h2>
+            <h2>{editingInvent ? 'Editar' : 'Nuevo'} movimiento</h2>
             <h4 className="subtitle">Formulario de movimiento</h4>
 
             <form onSubmit={handleGuardar}>
-              <select
-                name="tipo"
-                defaultValue={editing?.tipo ?? "Entrada"}
-                required
-              >
-                <div className="select-content">
-                  <option value="Entrada">Entrada</option>
-                  <option value="Salida">Salida</option>
-                  <option value="Ajuste">Ajuste</option>
-                </div>
+              <select name="id_producto" defaultValue={editingInvent?.id_producto || ''} required>
+                <option value="">Seleccione un producto</option>
+
+                {productos.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.codigo_barras} - {p.descripcion} {/* Opcional: más info */}
+                  </option>
+                ))}
               </select>
 
               <input
-                name="codigo"
-                placeholder="Código"
-                defaultValue={editing?.codigo}
+                type="number"
+                name="id_usuario"
+                placeholder="usuario"
+                defaultValue={editingInvent?.id_usuario || '1'}
                 required
               />
-              <input
-                name="nombre"
-                placeholder="Producto"
-                defaultValue={editing?.nombre}
-                required
-              />
-              <input
-                name="categoria"
-                placeholder="Categoría"
-                defaultValue={editing?.categoria}
-                required
-              />
+              <select name="tipo_movimiento" defaultValue={editingInvent?.tipo_movimiento ?? 'Entrada'}>
+                <option value="entrada">Entrada</option>
+                <option value="salida">Salida</option>
+                <option value="ajuste">Ajuste</option>
+              </select>
+
               <input
                 type="number"
                 name="cantidad"
                 placeholder="Cantidad"
-                defaultValue={editing?.cantidad}
+                min="1"
+                step="1"
+                defaultValue={editingInvent?.cantidad || ''}
                 required
               />
               <input
                 type="date"
-                name="fecha"
-                defaultValue={editing?.fecha ?? ""}
+                name="fecha_movimiento"
+                defaultValue={
+                  editingInvent?.fecha_movimiento
+                    ? new Date(editingInvent.fecha_movimiento).toISOString().split('T')[0]
+                    : ''
+                }
                 required
               />
               <input
-                name="usuario"
-                placeholder="Usuario responsable"
-                defaultValue={editing?.usuario ?? "Juan S."}
+                type="text"
+                name="descripcion"
+                placeholder="Descripción"
+                defaultValue={editingInvent?.descripcion ?? ''}
                 required
               />
 
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-cancelar"
-                  onClick={() => setShowModal(false)}
-                >
+                <button type="button" className="btn-cancelar" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-guardar">
