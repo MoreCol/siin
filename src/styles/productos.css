@@ -60,7 +60,8 @@
   color: #3b82f6; 
 }
 
-.estado-badge.activo { background: rgba(34,197,94,0.2); color: #059669; }
+.estado-badge.activo { background: rgba(68, 218, 123, 0.2); color: #059669; }
+.estado-badge.inactivo { background: rgba(217, 8, 8, 0.2); color: #060606; }
 .estado-badge.bajo { background: rgba(251,191,36,0.2); color: #d97706; }
 .estado-badge.agotado { background: rgba(239,68,68,0.2); color: #dc2626; }
 

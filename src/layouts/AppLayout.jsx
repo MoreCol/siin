@@ -1,7 +1,6 @@
 import { Outlet, useNavigate, Link } from 'react-router-dom';
 
 import '../styles/layout.css';
-import '../styles/navbar.css';
 
 import {
   MdDashboard,
@@ -42,53 +41,55 @@ export function AppLayout() {
         </div>
       </header>
 
-      <aside className="sidebar-left">
-        <nav className="sidebar-nav">
-          <Link to="/dashboard" className="sidebar-link">
-            <MdDashboard />
-            <span>Dashboard</span>
-          </Link>
+      <div className="layout-body">
+        <aside className="sidebar-left">
+          <nav className="sidebar-nav">
+            <Link to="/dashboard" className="sidebar-link">
+              <MdDashboard />
+              <span>Dashboard</span>
+            </Link>
 
-          <Link to="/productos" className="sidebar-link">
-            <MdShoppingCart />
-            <span>Productos</span>
-          </Link>
+            <Link to="/productos" className="sidebar-link">
+              <MdShoppingCart />
+              <span>Productos</span>
+            </Link>
 
-          <Link to="/inventarios" className="sidebar-link">
-            <MdInventory2 />
-            <span>Inventario</span>
-          </Link>
+            <Link to="/inventarios" className="sidebar-link">
+              <MdInventory2 />
+              <span>Inventario</span>
+            </Link>
 
-          <Link to="/pedidos" className="sidebar-link">
-            <span>🛒</span>
-            <span>Pedidos</span>
-          </Link>
+            <Link to="/pedidos" className="sidebar-link">
+              <span>🛒</span>
+              <span>Pedidos</span>
+            </Link>
 
-          <Link to="/ventas" className="sidebar-link">
-            <MdSell />
-            <span>Ventas</span>
-          </Link>
+            <Link to="/ventas" className="sidebar-link">
+              <MdSell />
+              <span>Ventas</span>
+            </Link>
 
-          <Link to="/proveedores" className="sidebar-link">
-            <MdLocalShipping />
-            <span>Proveedores</span>
-          </Link>
+            <Link to="/proveedores" className="sidebar-link">
+              <MdLocalShipping />
+              <span>Proveedores</span>
+            </Link>
 
-          <Link to="/usuarios" className="sidebar-link">
-            <MdPeople />
-            <span>Usuarios</span>
-          </Link>
-        </nav>
+            <Link to="/usuarios" className="sidebar-link">
+              <MdPeople />
+              <span>Usuarios</span>
+            </Link>
+          </nav>
 
-        <button className="sidebar-logout" onClick={handleLogout} type="button">
-          <MdExitToApp />
-          <span>Cerrar Sesion</span>
-        </button>
-      </aside>
+          <button className="sidebar-logout" onClick={handleLogout} type="button">
+            <MdExitToApp />
+            <span>Cerrar Sesion</span>
+          </button>
+        </aside>
 
-      <main className="app-content">
-        <Outlet />
-      </main>
+        <main className="app-content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

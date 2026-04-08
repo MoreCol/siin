@@ -20,10 +20,10 @@ export default function Inventario() {
   }, []);
 
   const cargarInventarios = async () => {
-    console.log('🔄 Cargando inventarios...');
+    console.log(' Cargando inventarios...');
     try {
       const res = await axios.get(API_URL);
-      console.log('✅ Respuesta inventarios:', res.data);
+      console.log(' Respuesta inventarios:', res.data);
 
       const inventariosFormateados = res.data.map(i => ({
         id_movimiento: i.id_movimiento, // ← PK backend

@@ -1,25 +1,6 @@
-/* ===== TOPBAR (NAVBAR FIXED) ===== */
-.navbar-top {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 4rem;
-  width: 100%;
-  padding: 0 20px;
-  background: linear-gradient(135deg, #030c25 0%, #336d3f 100%);
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-    box-shadow: 4px 0 15px rgba(16, 14, 14, 0.3);
 
-  z-index: 1000;
-  justify-content: space-between;
-  border-bottom: 0.5px solid #f3ebeb;
-  height: var(--topbar-h);
-  
-  
-}
 
+/*
 .navbar-left {
   display: flex;
   align-items: center;
@@ -95,7 +76,7 @@
   transform: scale(1.05);
 }
 
-/* ===== SIDEBAR FIXED A LA IZQUIERDA ===== */
+/* ===== SIDEBAR FIXED A LA IZQUIERDA ===== 
 .sidebar-left{
   position: fixed;
   
@@ -128,7 +109,7 @@
   gap: .6rem;
 }
 
-/* LINKS DEL SIDEBAR */
+/* LINKS DEL SIDEBAR 
 .sidebar-link {
   display: flex;
   flex-direction: row;
@@ -157,7 +138,7 @@
   padding-left: 2rem;
 }
 
-/* BOTÓN LOGOUT */
+/* BOTÓN LOGOUT 
 .sidebar-logout {
   padding: 1rem;
   background: none;
@@ -180,7 +161,7 @@
 
 /* .sidebar-logout:hover{
   color: 
-} */
+} 
 
 
 @media (max-width: 768px) {
@@ -208,7 +189,7 @@
   }
 
   .sidebar-link span:last-child {
-    display: none; /* Oculta el texto, solo iconos */
+    display: none; /* Oculta el texto, solo iconos 
   }
 
   .sidebar-logout {
@@ -216,13 +197,13 @@
     padding: 1rem 0.5rem;
   }
 
-  /* Tooltip al pasar mouse (opcional, requiere JavaScript) */
+  /* Tooltip al pasar mouse (opcional, requiere JavaScript) 
   .sidebar-link:hover {
     padding-left: 0.5rem;
   }
 }
 
-/* ===== RESPONSIVE TABLET ===== */
+/* ===== RESPONSIVE TABLET ===== 
 @media (min-width: 769px) and (max-width: 1024px) {
   .navbar-search {
     max-width: 300px;
@@ -231,18 +212,18 @@
 
 @media (max-width: 768px){
 
-  /* Sidebar pasa de columna izquierda a barra debajo del navbar */
+   Sidebar pasa de columna izquierda a barra debajo del navbar 
   .sidebar-left{
     position: fixed;
     top: var(--topbar-h);
     left: 0;
     width: 100%;
-    height: 64px;                /* ajusta a gusto */
+    height: 64px;                /* ajusta a gusto 
     padding: 0;
     bottom: auto;
   }
 
-  /* Links en fila */
+  /* Links en fila 
   .sidebar-nav{
     flex-direction: row;
     align-items: center;
@@ -258,10 +239,10 @@
   }
 
   .sidebar-link span:last-child{
-    display: none; /* solo iconos */
+    display: none; /* solo iconos 
   }
 
-  /* El logout como botón pequeño a la derecha (o lo ocultas) */
+  /* El logout como botón pequeño a la derecha (o lo ocultas) 
   .sidebar-logout{
     margin-top: 0;
     border-top: 0;
@@ -269,4 +250,4 @@
     padding: 0 8px;
     width: auto;
   }
-}
+} 
