@@ -11,11 +11,11 @@ import {
 
 const router = Router();
 
-router.get("/products", getProducts); // OBTIENE * LOS PRODUCTOS
-router.get("/products/:id", getProduct);// OBTIENE UN PRODUCTO POR ID 
-router.post("/products", createProduct); // CREA PRODUCTOS 
-router.put("/products/:id", updateProduct); // ACTUALIZA UN PRODUCTO CON ID
-router.delete("/products/:id", deleteProduct);// ELIMAR UN PRODUCTO CON ID 
+router.get("/products", getProducts); 
+router.get("/products/:id", getProduct);
+router.post("/products", createProduct); 
+router.put("/products/:id", updateProduct); 
+router.delete("/products/:id", deleteProduct); 
 
 //EXPORTAMOS Y LO USAMOS EN TEST.JS 
 export default router;

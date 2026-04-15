@@ -3,7 +3,10 @@ import * as dotenv from 'dotenv';
 import { Product } from '../entity/product';
 import { Invent } from '../entity/inventario';
 import { Usuario } from '../entity/usuarios';
-import { Rol } from '../entity/rol';
+import { Rol } from '../entity/Rol';
+import { Proveedor } from '../entity/proveedores';
+import { Pedido } from '../entity/pedidos';
+import { DetallePedido } from '../entity/detallePedido';
 
 dotenv.config();
 
@@ -15,7 +18,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   synchronize: false,
-  entities: [Product,Invent,Usuario,Rol]
+  entities: [Product,Invent,Usuario,Rol, Proveedor, Pedido,DetallePedido]
 });
 
 export const conexion= async() =>{

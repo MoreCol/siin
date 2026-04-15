@@ -1,30 +1,53 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { MdAdd, MdEdit, MdDelete } from 'react-icons/md';
+import axios from 'axios';
+
+
 import '../styles/shared.css';
 import '../styles/proveedores.css';
-import { MdEdit, MdDelete } from 'react-icons/md';
-export default function Proveedores() {
-  const [proveedores, setProveedores] = useState([
-    {
-      id: 1,
-      nit: '900123456-7',
-      nombre: 'Papelería Escobar',
-      telefono: '3105551234',
-      email: 'escobar@gmail.com',
-      estado: 'Activo'
-    },
-    {
-      id: 2,
-      nit: '800987654-1',
-      nombre: 'Grafitos',
-      telefono: '3204448899',
-      email: 'grafitos@gmail.com',
-      estado: 'Activo'
-    }
-  ]);
 
+const API_URL = 'http://localhost:3000/api/proveedores';
+
+export default function Proveedores() {
+  const [proveedores, setProveedores] = useState([]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+
+
+
+
+
+
+
+  useEffect(() => {
+    cargarProveedores();
+  }, []);
+
+  const cargarProveedores = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(API_URL);
+
+      const ProveedoresFormateados = res.data.map(p => ({
+        id_proveedor: p.id_proveedor,
+        nit: p.nit || '',
+        nombre: p.nombre || '',
+        telefono: p.telefono || '',
+
+        email: p.correo || '',
+        direccion: p.direccion || '',
+        estado: p.estado ? 'Activo' : 'Inactivo'
+      }));
+      setProveedores(ProveedoresFormateados);
+    } catch (error) {
+      console.error('Error cargando proveedores:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProv = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -34,68 +57,79 @@ export default function Proveedores() {
     );
   }, [proveedores, search]);
 
-  const abrirNuevo = () => {
+  const editarUsuario = () => {
     setEditing(null);
     setShowModal(true);
   };
 
-  const abrirEditar = p => {
-    setEditing(p);
-    setShowModal(true);
-  };
+  const eliminarProveedor = async id_proveedor => {
+    if (!confirm('¿Eliminar este proveedor?')) return;
 
-  const eliminar = id => {
-    if (confirm('¿Eliminar este proveedor?')) {
-      setProveedores(prev => prev.filter(p => p.id !== id));
+    try {
+      await axios.delete(`${API_URL}/${id_proveedor}`);
+
+      setProveedores(prev => prev.filter(u => u.id_usuario !== id_usuario));
+    } catch (error) {
+      await cargarProveedores();
     }
   };
 
-  const handleGuardar = e => {
+  const handleGuardar = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
 
-    const nuevo = {
-      id: editing ? editing.id : Date.now(),
-      nit: fd.get('nit')?.toString().trim(),
-      nombre: fd.get('nombre')?.toString().trim(),
-      telefono: fd.get('telefono')?.toString().trim(),
-      email: fd.get('email')?.toString().trim(),
-      estado: fd.get('estado')?.toString().trim() || 'Activo'
+    const Proovdata = {
+      nit: Number(fd.get('nit')),
+      nombre: String(fd.get('nombre')).trim(),
+      telefono: Number(fd.get('telefono')),
+      correo: String(fd.get('email')).trim(),
+      direccion: String(fd.get('direccion')).trim(),
+      estado: String(fd.get('estado')).trim() === 'Activo'
     };
 
-    setProveedores(prev => {
-      if (editing) return prev.map(p => (p.id === editing.id ? nuevo : p));
-      return [nuevo, ...prev];
-    });
+    try {
+      if (editing) {
+        await axios.put(`${API_URL}/${editing.id_proveedor}`, Proovdata);
+      } else {
+        await axios.post(API_URL, Proovdata);
+      }
+      await cargarProveedores();
 
-    setShowModal(false);
-    setEditing(null);
-    e.target.reset();
+      setShowModal(false);
+      setEditing(null);
+      e.target.reset();
+      await cargarProveedores();
+    } catch (error) {
+      console.error('Error al guardar proveedor', error);
+    }
   };
 
   return (
     <div className="container">
       <div className="header">
         <div className="header-left">
-          <h1 className="proveedores-title">
-            Proveedores <span></span>
-          </h1>
+          <h1 className="proveedores-title">Proveedores</h1>
         </div>
       </div>
 
       <div className="filtros-bar">
         <div className="filtros-izq">
           <input
-            className="filtro-input "
-            placeholder="🔍 Buscar por NIT, nombre, teléfono, email..."
+            className="filtro-input"
+            placeholder=" Buscar por NIT, nombre, teléfono, email..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-
         <div className="filtros-der">
-          <button className="btn-producto btn-nuevo" onClick={abrirNuevo}>
-            ➕ Agregar proveedor
+          <button
+            className="btn-producto btn-nuevo"
+            onClick={() => {
+              setEditing(null);
+              setShowModal(true);
+            }}
+          >
+            <MdAdd className="add-icon" /> Agregar Proveedor
           </button>
         </div>
       </div>
@@ -113,28 +147,29 @@ export default function Proveedores() {
                 <th>Nombre</th>
                 <th>Teléfono</th>
                 <th>Email</th>
+                <th>Dirección</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
-
             <tbody>
               {filteredProv.map(p => (
-                <tr key={p.id}>
-                  <td>
-                    <code>{p.nit}</code>
-                  </td>
+                <tr key={p.id_proveedor}>
+                  <td>{p.nit}</td>
                   <td>{p.nombre}</td>
                   <td>{p.telefono}</td>
                   <td>{p.email}</td>
-                  <td>
-                    <span className={`proveedores-badge ${p.estado.toLowerCase()}`}>{p.estado}</span>
-                  </td>
+                  <td>{p.direccion}</td>
+                  <td>{p.estado}</td>
                   <td className="acciones-cell">
-                    <button className="btn-accion editar" onClick={() => abrirEditar(p)} title="Editar">
-                      <MdEdit className="add-icon" />
+                    <button className="btn-accion editar" onClick={() => editarUsuario(p)} title="Editar">
+                      <MdEdit />
                     </button>
-                    <button className="btn-accion eliminar" onClick={() => eliminar(p.id)} title="Eliminar">
+                    <button
+                      className="btn-accion eliminar"
+                      onClick={() => eliminarProveedor(p.id_proveedor)}
+                      title="Eliminar"
+                    >
                       <MdDelete />
                     </button>
                   </td>
@@ -145,7 +180,7 @@ export default function Proveedores() {
         </div>
 
         <div className="table-footer">
-          <button className="btn-ver" type="button">
+          <button className="btn-ver" type="button" >
             Ver proveedores
           </button>
         </div>
@@ -160,13 +195,13 @@ export default function Proveedores() {
         >
           <div className="modal-content">
             <h2>{editing ? 'Editar' : 'Nuevo'} proveedor</h2>
-            <h4 className="proveedores-modal-subtitle">Ingresar Campos</h4>
 
             <form onSubmit={handleGuardar}>
               <input
                 name="nit"
                 className="proveedores-modal-input"
-                placeholder="NIT"
+                placeholder="NIT (número)"
+                type="number"
                 defaultValue={editing?.nit}
                 required
               />
@@ -182,6 +217,7 @@ export default function Proveedores() {
                 className="proveedores-modal-input"
                 placeholder="Teléfono"
                 defaultValue={editing?.telefono}
+                required
               />
               <input
                 name="email"
@@ -189,13 +225,19 @@ export default function Proveedores() {
                 className="proveedores-modal-input"
                 placeholder="Email"
                 defaultValue={editing?.email}
+                required
+              />
+              <input
+                name="direccion"
+                className="proveedores-modal-input"
+                placeholder="Dirección"
+                defaultValue={editing?.direccion}
+                required
               />
 
               <select name="estado" className="proveedores-modal-input" defaultValue={editing?.estado ?? 'Activo'}>
-                <div className="select-content">
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                </div>
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
               </select>
 
               <div className="proveedores-modal-actions">

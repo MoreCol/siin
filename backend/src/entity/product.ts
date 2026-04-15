@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
 import { Invent } from "./inventario";
+import { DetallePedido } from "./detallePedido";
 
 @Entity("productos")
 export class Product {
@@ -36,4 +37,6 @@ export class Product {
 
   @OneToMany(()=> Invent, invent=> invent.producto)
   inventario_movimientos!:Invent[]
+  @OneToMany(()=> DetallePedido, detalle=> detalle.producto)
+  detalle_pedido!:DetallePedido[]
 }

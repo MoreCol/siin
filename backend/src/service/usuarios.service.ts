@@ -1,16 +1,17 @@
 import { AppDataSource } from '../config/dataBase';
 import { Usuario } from '../entity/usuarios';
+import { Rol } from '../entity/Rol';
 
 export class UsuarioService {
   //cclase servicio
 
   private repo = AppDataSource.getRepository(Usuario); //repositorio de usuarios
-
+  private rolRepo = AppDataSource.getRepository(Rol);
   async findAll() {
-    return this.repo.find()
+    return this.repo.find();
   }
   async findOne(id: number) {
-    return this.repo.findOneBy({id_usuario:id}); //buscar por pk
+    return this.repo.findOneBy({ id_usuario: id }); //buscar por pk
   }
   async create(data: Partial<Usuario>) {
     const usuario = this.repo.create(data);

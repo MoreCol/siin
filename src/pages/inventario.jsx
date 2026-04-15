@@ -4,40 +4,40 @@ import '../styles/inventario.css';
 import '../styles/productos.css';
 import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 
-const API_URL = 'http://localhost:3000/api/inventario'; // ← CAMBIO
+const API_URL = 'http://localhost:3000/api/inventario'; //url del servidor
 
 export default function Inventario() {
-  const [ListaInventarios, setListaInventarios] = useState([]); // ← Plural
+  const [ListaInventarios, setListaInventarios] = useState([]); //
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [editingInvent, setEditingInvent] = useState(null); // ← Invent
+  const [editingInvent, setEditingInvent] = useState(null); //
   const [loading, setLoading] = useState(true);
-  const [productos, setProductos] = useState([]); // ← Para select
+  const [productos, setProductos] = useState([]);
 
   useEffect(() => {
     cargarInventarios();
-    cargarProductos(); // ← Cargar para select
+    cargarProductos();
   }, []);
 
   const cargarInventarios = async () => {
     console.log(' Cargando inventarios...');
     try {
       const res = await axios.get(API_URL);
-      console.log(' Respuesta inventarios:', res.data);
+      console.log(' Respuesta inventarios', res.data);
 
       const inventariosFormateados = res.data.map(i => ({
-        id_movimiento: i.id_movimiento, // ← PK backend
+        id_movimiento: i.id_movimiento,
         id_producto: i.id_producto,
         producto_descripcion: i.producto?.descripcion || 'Sin producto',
         id_usuario: i.id_usuario,
         tipo_movimiento: i.tipo_movimiento,
         cantidad: Number(i.cantidad),
-        fecha_movimiento: i.fecha_movimiento || i.fecha_moviento,
+        fecha_movimiento: i.fecha_movimiento || i.fecha_movimiento,
         descripcion: i.descripcion || ''
       }));
       setListaInventarios(inventariosFormateados);
     } catch (error) {
-      console.error('❌ Error cargando inventarios:', error);
+      console.error(' Error cargando inventarios:');
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export default function Inventario() {
       const res = await axios.get('http://localhost:3000/api/products');
       setProductos(res.data);
     } catch (error) {
-      console.error('Error productos:', error);
+      console.error('Error productos:');
     }
   };
 
@@ -76,21 +76,21 @@ export default function Inventario() {
       setListaInventarios(prev => prev.filter(i => i.id_movimiento !== id_movimiento));
     } catch (error) {
       alert('Error eliminando');
-      cargarInventarios();
+      await cargarInventarios();
     }
   };
 
   const handleGuardar = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
+    console.log('formData');
 
     const inventData = {
       id_producto: Number(fd.get('id_producto')),
-
       id_usuario: Number(fd.get('id_usuario')),
       tipo_movimiento: String(fd.get('tipo_movimiento')).trim(),
       cantidad: Number(fd.get('cantidad')),
-      fecha_movimiento: fd.get('fecha_movimiento'), // ← FALTABA
+      fecha_movimiento: fd.get('fecha_movimiento'),
       descripcion: String(fd.get('descripcion')).trim()
     };
 
@@ -105,18 +105,14 @@ export default function Inventario() {
 
     console.log('VALOR SELECT:', fd.get('id_producto'));
 
-    /*if (!inventData.id_producto || Number.isNaN(inventData.id_producto)) {
-      alert('Selecciona un producto válido');
-      return;
-    }*/
-
     try {
       if (editingInvent) {
         await axios.put(`${API_URL}/${editingInvent.id_movimiento}`, inventData);
-        console.log('✅ Inventario actualizado');
+        console.log(' Inventario actualizado');
       } else {
         await axios.post(API_URL, inventData);
-        console.log('✅ Nuevo movimiento creado');
+
+       
       }
 
       await cargarInventarios();
@@ -124,15 +120,11 @@ export default function Inventario() {
       setShowModal(false);
       e.target.reset();
     } catch (error) {
-      console.error('❌ ERROR COMPLETO:', error);
-      console.error('❌ RESPONSE DATA:', error.response?.data);
-      console.error('❌ STATUS:', error.response?.status);
+      console.error('Error al guardar', error);
 
-      alert(error.response?.data?.message || 'No se pudo guardar');
+      alert('No se pudo guardar');
     }
   };
-
-  if (loading) return <div className="loading">Cargando inventarios...</div>;
 
   return (
     <div className="container">
@@ -233,7 +225,7 @@ export default function Inventario() {
 
                 {productos.map(p => (
                   <option key={p.id} value={p.id}>
-                    {p.codigo_barras} - {p.descripcion} {/* Opcional: más info */}
+                    {p.codigo_barras} - {p.descripcion}
                   </option>
                 ))}
               </select>

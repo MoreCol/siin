@@ -21,7 +21,7 @@ export default function Usuarios() {
     console.log('cargando usuarios');
     try {
       const res = await axios.get(API_URL);
-      console.log('respuesta ok');
+      console.log('si' , res.data);
 
       const usuariosFormateados = res.data.map(u => ({
         id_usuario: u.id_usuario,
@@ -58,38 +58,36 @@ export default function Usuarios() {
   };
 
   const eliminarUsuario = async id_usuario => {
-    if (!window.confirm('¿Eliminar este usuario?')) return;
+    if (!confirm('¿Eliminar este usuario?')) return;
 
     try {
       await axios.delete(`${API_URL}/${id_usuario}`);
-      console.log(' Producto eliminado del servidor');
+      res.status(200).json({ message: 'Producto eliminado' });
+
       setListaUsuarios(prev => prev.filter(u => u.id_usuario !== id_usuario));
     } catch (error) {
-      alert('No se pudo eliminar el usuario');
+    
       await cargarUsuarios();
     }
   };
 
+  
+
   const handleGuardar = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
+    console.log('formData');
 
-    const nombre = String(fd.get('nombre')).trim();
-    const apellido = String(fd.get('apellido')).trim();
-    const correo = String(fd.get('correo')).trim();
-    const password = String(fd.get('password')).trim();
-    const id_rol = Number(fd.get('id_rol'));
-    const estado = fd.get('estado') === '1'; // 1 → true, 0 → false
+const newData ={
+    nombre : String(fd.get('nombre')).trim(),
+    apellido : String(fd.get('apellido')).trim(),
+    correo : String(fd.get('correo')).trim(),
+    password : String(fd.get('password')).trim(),
+    id_rol : Number(fd.get('id_rol')),
+   estado : fd.get('estado')}
 
-    const newData = {
-      nombre,
-      apellido,
-      correo,
-      password,
-      id_rol,
-      estado
-    };
-
+    
+console.log ( 'informacion leida')
     try {
       if (editingUser) {
         await axios.put(`${API_URL}/${editingUser.id_usuario}`, newData);
@@ -100,7 +98,7 @@ export default function Usuarios() {
 
       await cargarUsuarios();
 
-      // 👈 mira aquí si el GET ya trajo el nuevo estado
+   
       setEditingUser(null);
       setShowModal(false);
       e.target.reset();
@@ -160,8 +158,8 @@ export default function Usuarios() {
               </tr>
             </thead>
             <tbody>
-              {filteredUsuarios.length > 0 ? (
-                filteredUsuarios.map(u => (
+              
+                {filteredUsuarios.map(u => (
                   <tr key={u.id_usuario}>
                     <td>{u.nombre}</td>
                     <td>{u.apellido}</td>
@@ -182,14 +180,8 @@ export default function Usuarios() {
                       </button>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="usuarios-empty">
-                    No hay usuarios.
-                  </td>
-                </tr>
-              )}
+                ))}
+            
             </tbody>
           </table>
         </div>

@@ -81,11 +81,11 @@ export default function Productos() {
     if (!confirm('¿Deseas eliminar este producto permanentemente?')) return;
 
     try {
-      // 1. Llamar al backend
+     
       await axios.delete(`${API_URL}/${id}`);
       console.log(' Producto eliminado del servidor');
 
-      // 2. Actualizar frontend
+      //  Actualiza frontend
       setListaProductos(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error(' Error eliminando:', error.response?.data || error.message);
@@ -127,15 +127,7 @@ export default function Productos() {
       setShowModal(false);
       e.target.reset();
 
-      // Actualiza el estado local
-      /*setListaProductos(prev => {
-        if (editingProduct) {
-          return prev.map(p => (p.id === editingProduct.id ? productData : p));
-        }
-        return [productData, ...prev];
-      });*/
-
-      // Vuelve a cargar desde el backend para tener el estado fresco
+     
     } catch (error) {
       console.error('Error al guardar:', error);
       alert('No se pudo guardar');
