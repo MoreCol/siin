@@ -17,6 +17,8 @@ export function AppLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
     navigate('/', { replace: true });
   };
 
@@ -24,7 +26,7 @@ export function AppLayout() {
     <div className="layout-wrapper">
       <header className="navbar-top">
         <div className="navbar-left">
-          <span className="navbar-logo"></span>
+          
           <span className="navbar-app-name">Miscelanea </span>
           <span className="navbar-app-name"> Moreno</span>
         </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import '../styles/login.css';
 import '../styles/shared.css';
@@ -54,8 +55,11 @@ export default function Login() {
     e.preventDefault();
     if (!validarCampos()) return;
 
+    localStorage.setItem('token', 'demo-token');
+    localStorage.setItem('user', JSON.stringify({ correo }));
+
     setMensajeExito('¡INICIO DE SESIÓN EXITOSO!');
-    setTimeout(() => navigate('/productos'), 200);
+    setTimeout(() => navigate('/dashboard', { replace: true }), 200);
   };
 
   return (
@@ -101,9 +105,9 @@ export default function Login() {
               ¿Olvidaste tu contraseña?
             </a>
             <span style={{ margin: '0 10px', color: '#ccc' }}>|</span>
-            <a href="#" style={{ color: '#007BFF', textDecoration: 'none' }}>
+            <Link to="/registro" style={{ color: '#007BFF', textDecoration: 'none' }}>
               Registrarse
-            </a>
+            </Link>
           </div>
         </div>
       </div>

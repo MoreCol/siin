@@ -7,8 +7,8 @@ import { Proveedor } from './proveedores';
 export class DetallePedido {
   @PrimaryGeneratedColumn()
   id_detalle_pedido!: number;
- /* @Column()
-  id_pedido!: number;*/
+  @Column()
+  id_pedido!: number;
   @Column()
   id_producto!: number;
   @Column()
@@ -20,11 +20,13 @@ export class DetallePedido {
   @JoinColumn({ name: 'id_producto' })
   producto!: Product;
 
-  /*@ManyToOne(() => Pedido, pedido => pedido.detalles)
+  @ManyToOne(() => Pedido, pedido => pedido.detalles, {
+    onDelete: 'CASCADE'
+  })
   @JoinColumn({ name: 'id_pedido' })
-  pedido!: Pedido;*/
+  pedido!: Pedido;
 
-  @ManyToOne(() => Proveedor, proveedor => proveedor.detalle_pedido)
+  @ManyToOne(() => Proveedor, proveedor => proveedor.DetallePedido)
   @JoinColumn({ name: 'id_proveedor' })
   proveedor!: Proveedor;
 }

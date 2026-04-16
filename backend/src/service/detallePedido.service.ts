@@ -6,7 +6,7 @@ export class DetallePedidosService {
 
   async findAll() {
     return await this.repo.find({
-      relations: [ 'producto', 'proveedor'],
+      relations: ['producto', 'proveedor', 'pedido'],
       order: { id_detalle_pedido: 'DESC' }
     });
   }
@@ -14,7 +14,7 @@ export class DetallePedidosService {
   findOne(id: number) {
     return this.repo.findOne({
       where: { id_detalle_pedido: id },
-      relations: [ 'producto', 'proveedor'],
+      relations: ['producto', 'proveedor', 'pedido'],
     });
   }
 

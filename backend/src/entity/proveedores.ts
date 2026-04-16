@@ -20,7 +20,7 @@ correo!: string;
 direccion!: string;
 
 
-@OneToMany(() => DetallePedido, detalles => detalles.proveedor)
-  detalle_pedido!: DetallePedido[];
+@OneToMany(() => DetallePedido, detalle => detalle.proveedor)
+  DetallePedido!: DetallePedido[];
 
 }

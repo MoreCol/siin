@@ -1,5 +1,7 @@
 
 
+
+
 .pedidos-table-header h2{
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
@@ -206,4 +208,17 @@ border: none;
     cursor: pointer;
     align-items: center;
     min-width: 150px;
+}
+
+.modal-content-pedido{
+  width: min(1000px);
+  height: 800px;
+  max-height: calc(100vh - 200px);
+  overflow: auto;
+  background: #111828;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 19px;
+  padding: 1.5rem 2.5rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
 }

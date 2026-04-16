@@ -1,165 +1,96 @@
-import { useMemo, useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import axios from 'axios';
 import '../styles/shared.css';
 import '../styles/pedidos.css';
-import { MdAdd } from 'react-icons/md';
+import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 import * as XLSX from 'xlsx';
 
+const API_PEDIDOS = 'http://localhost:3000/api/pedidos';
+const API_PRODUCTOS = 'http://localhost:3000/api/products';
+const API_PROVEEDORES = 'http://localhost:3000/api/proveedores';
+const API_DETALLES = 'http://localhost:3000/api/detalles';
+
+const initialPedidoForm = {
+  fecha_pedido: '',
+  fecha_entrega: '',
+  estado: 'Pendiente'
+};
+
+const initialDetalleForm = {
+  id_producto: '',
+  id_proveedor: '',
+  cantidad: 1
+};
+
 export default function Pedidos() {
-  const [catalogo] = useState([
-    { codigo: 'P001', descripcion: 'Cuaderno espiral' },
-    { codigo: 'P002', descripcion: 'Lapicero' },
-    { codigo: 'P003', descripcion: 'Borrador' },
-    { codigo: 'P004', descripcion: 'Plastilina' }
-  ]);
-
-  const [proveedores] = useState([
-    { id: 'escobar', nombre: 'Escobar' },
-    { id: 'grafitos', nombre: 'Grafitos' },
-    { id: 'd1', nombre: 'D1' }
-  ]);
-
-  const [showModal, setShowModal] = useState(false);
-  const [draft, setDraft] = useState({
-    codigo: catalogo[0]?.codigo ?? '',
-    descripcion: '',
-    cantidad: 1,
-    proveedorId: proveedores[0]?.id ?? 'escobar'
-  });
-
-  const [items, setItems] = useState([]);
-  const [editingItem, setEditingItem] = useState(null);
   const [pedidos, setPedidos] = useState([]);
   const [search, setSearch] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [editingPedido, setEditingPedido] = useState(null);
+  const [editingDetalle, setEditingDetalle] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const proveedorSeleccionado = useMemo(() => {
-    return proveedores.find(p => p.id === draft.proveedorId) ?? null;
-  }, [proveedores, draft.proveedorId]);
+  const [productos, setProductos] = useState([]);
+  const [proveedores, setProveedores] = useState([]);
 
-  const onChangeDraft = e => {
-    const { name, value } = e.target;
+  const [detallePedidos, setDetallePedidos] = useState([]);
+  const [pedidoForm, setPedidoForm] = useState(initialPedidoForm);
+  const [detalleForm, setDetalleForm] = useState(initialDetalleForm);
 
-    if (name === 'codigo') {
-      const prod = catalogo.find(p => p.codigo === value);
-      setDraft(prev => ({
-        ...prev,
-        codigo: value,
-        descripcion: prev.descripcion ? prev.descripcion : (prod?.descripcion ?? '')
-      }));
-      return;
-    }
+  useEffect(() => {
+    cargarPedidos();
+    cargarProductos();
+    cargarProveedores();
+  }, []);
 
-    setDraft(prev => ({
-      ...prev,
-      [name]: name === 'cantidad' ? Number(value) : value
-    }));
-  };
+  const cargarPedidos = async () => {
+    try {
+      const resPedidos = await axios.get(API_PEDIDOS);
+      const resDetalles = await axios.get(API_DETALLES);
 
-  const abrirModal = () => {
-    setShowModal(true);
-    setEditingItem(null);
-  };
+      const pedidosFormateados = resPedidos.data.map(p => {
+        const detalles = resDetalles.data.filter(d => d.id_pedido === p.id_pedido);
 
-  const cerrarModal = () => {
-    setShowModal(false);
-    setEditingItem(null);
-    setDraft(prev => ({ ...prev, cantidad: 1 }));
-  };
+        return {
+          id_pedido: p.id_pedido,
+          fecha_pedido: p.fecha_pedido,
+          fecha_entrega: p.fecha_entrega,
+          estado: p.estado,
+          items: detalles.map(d => ({
+            id_detalle_pedido: d.id_detalle_pedido,
+            id_producto: d.id_producto,
+            producto_descripcion: d.producto?.descripcion || 'Sin producto',
+            id_proveedor: d.id_proveedor,
+            proveedor_nombre: d.proveedor?.nombre || 'Sin proveedor',
+            cantidad: Number(d.cantidad)
+          }))
+        };
+      });
 
-  const agregarALaLista = e => {
-    e.preventDefault();
-
-    const cantidad = Number(draft.cantidad);
-    if (!cantidad || cantidad < 1) return alert('Cantidad inválida');
-    if (!draft.codigo.trim()) return alert('Falta el código');
-    if (!draft.descripcion.trim()) return alert('Falta la descripción');
-    if (!draft.proveedorId) return alert('Falta el proveedor');
-
-    const itemNuevo = {
-      id: editingItem ? editingItem.id : Date.now(),
-      codigo: draft.codigo.trim(),
-      descripcion: draft.descripcion.trim(),
-      cantidad,
-      proveedorId: draft.proveedorId
-    };
-
-    setItems(prev => {
-      if (editingItem) {
-        return prev.map(it => (it.id === editingItem.id ? itemNuevo : it));
-      }
-      return [itemNuevo, ...prev];
-    });
-
-    setEditingItem(null);
-    setDraft(prev => ({ ...prev, cantidad: 1, descripcion: '' }));
-  };
-
-  const editarItem = it => {
-    setEditingItem(it);
-    setShowModal(true);
-    setDraft({
-      codigo: it.codigo,
-      descripcion: it.descripcion,
-      cantidad: it.cantidad,
-      proveedorId: it.proveedorId
-    });
-  };
-
-  const cancelarEdicionItem = () => {
-    setEditingItem(null);
-    setDraft(prev => ({ ...prev, cantidad: 1 }));
-  };
-
-  const eliminarItem = id => {
-    setItems(prev => prev.filter(it => it.id !== id));
-    if (editingItem?.id === id) setEditingItem(null);
-  };
-
-  const crearPedidosPorProveedor = () => {
-    if (items.length === 0) return alert('Agrega al menos un producto');
-
-    const grupos = items.reduce((acc, it) => {
-      const key = it.proveedorId ?? 'sin_proveedor';
-      acc[key] = acc[key] || [];
-      acc[key].push(it);
-      return acc;
-    }, {});
-
-    const fecha = new Date().toISOString().slice(0, 10);
-
-    const nuevos = Object.entries(grupos).map(([proveedorId, itemsProv]) => {
-      const prov = proveedores.find(p => p.id === proveedorId);
-      return {
-        id: Date.now() + Math.floor(Math.random() * 10000),
-        proveedorId,
-        proveedorNombre: prov?.nombre ?? 'Sin proveedor',
-        fecha,
-        estado: 'Pendiente',
-        items: itemsProv.map(x => ({ ...x }))
-      };
-    });
-
-    setPedidos(prev => [...nuevos, ...prev]);
-    setItems([]);
-    setEditingItem(null);
-    setDraft(prev => ({ ...prev, cantidad: 1, descripcion: '' }));
-    setShowModal(false);
-  };
-
-  const cambiarEstadoPedido = (id, estado) => {
-    setPedidos(prev => prev.map(p => (p.id === id ? { ...p, estado } : p)));
-  };
-
-  const eliminarPedido = id => {
-    if (confirm('¿Eliminar este pedido?')) {
-      setPedidos(prev => prev.filter(p => p.id !== id));
+      setPedidos(pedidosFormateados);
+    } catch (error) {
+      console.error('Error cargando pedidos:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const editarPedido = pedido => {
-    setItems(pedido.items.map(x => ({ ...x })));
-    setPedidos(prev => prev.filter(p => p.id !== pedido.id));
-    setShowModal(true);
-    setEditingItem(null);
+  const cargarProductos = async () => {
+    try {
+      const res = await axios.get(API_PRODUCTOS);
+      setProductos(res.data);
+    } catch (error) {
+      console.error('Error cargando productos:', error);
+    }
+  };
+
+  const cargarProveedores = async () => {
+    try {
+      const res = await axios.get(API_PROVEEDORES);
+      setProveedores(res.data);
+    } catch (error) {
+      console.error('Error cargando proveedores:', error);
+    }
   };
 
   const pedidosFiltrados = useMemo(() => {
@@ -167,20 +98,161 @@ export default function Pedidos() {
     if (!q) return pedidos;
 
     return pedidos.filter(p =>
-      [p.id, p.proveedorNombre, p.fecha, p.estado].some(v => String(v).toLowerCase().includes(q))
+      [p.id_pedido, p.fecha_pedido, p.fecha_entrega, p.estado].some(v =>
+        String(v).toLowerCase().includes(q)
+      )
     );
   }, [pedidos, search]);
 
+  const resetForms = () => {
+    setEditingPedido(null);
+    setEditingDetalle(null);
+    setDetallePedidos([]);
+    setPedidoForm({ ...initialPedidoForm });
+    setDetalleForm({ ...initialDetalleForm });
+  };
+
+  const abrirModal = () => {
+    resetForms();
+    setShowModal(true);
+  };
+
+  const cerrarModal = () => {
+    setShowModal(false);
+    resetForms();
+  };
+
+  const editarPedido = pedido => {
+    setEditingPedido(pedido);
+    setDetallePedidos((pedido.items || []).map(x => ({
+      ...x,
+      id: x.id_detalle_pedido || Date.now()
+    })));
+    setPedidoForm({
+      fecha_pedido: pedido.fecha_pedido || '',
+      fecha_entrega: pedido.fecha_entrega || '',
+      estado: pedido.estado || 'Pendiente'
+    });
+    setDetalleForm({ ...initialDetalleForm });
+    setShowModal(true);
+  };
+
+  const cambiarPedidoForm = e => {
+    const { name, value } = e.target;
+    setPedidoForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const cambiarDetalleForm = e => {
+    const { name, value } = e.target;
+    setDetalleForm(prev => ({
+      ...prev,
+      [name]: name === 'cantidad' || name.startsWith('id_') ? Number(value) || '' : value
+    }));
+  };
+
+  const agregarItem = e => {
+    e.preventDefault();
+
+    if (!detalleForm.id_producto) return alert('Seleccione un producto');
+    if (!detalleForm.id_proveedor) return alert('Seleccione un proveedor');
+    if (!detalleForm.cantidad || detalleForm.cantidad < 1) return alert('Cantidad inválida');
+
+    const prod = productos.find(p => Number(p.id) === Number(detalleForm.id_producto));
+    const prov = proveedores.find(p => Number(p.id_proveedor || p.id) === Number(detalleForm.id_proveedor));
+
+    const itemNuevo = {
+      id_detalle_pedido: editingDetalle ? editingDetalle.id_detalle_pedido : Date.now(),
+      id_producto: Number(detalleForm.id_producto),
+      producto_descripcion: prod?.descripcion || 'Sin producto',
+      id_proveedor: Number(detalleForm.id_proveedor),
+      proveedor_nombre: prov?.nombre || 'Sin proveedor',
+      cantidad: Number(detalleForm.cantidad)
+    };
+
+    setDetallePedidos(prev => {
+      if (editingDetalle) {
+        return prev.map(it =>
+          it.id === editingDetalle.id ? { ...itemNuevo, id: editingDetalle.id } : it
+        );
+      }
+      return [{ ...itemNuevo, id: Date.now() }, ...prev];
+    });
+
+    setEditingDetalle(null);
+    setDetalleForm({ ...initialDetalleForm });
+  };
+
+  const editarItem = item => {
+    setEditingDetalle(item);
+    setDetalleForm({
+      id_producto: item.id_producto,
+      id_proveedor: item.id_proveedor,
+      cantidad: item.cantidad
+    });
+  };
+
+  const eliminarItem = id => {
+    setDetallePedidos(prev => prev.filter(it => it.id !== id));
+    if (editingDetalle?.id === id) setEditingDetalle(null);
+  };
+
+  const handleGuardar = async () => {
+    if (detallePedidos.length === 0) return alert('Agrega al menos un detalle');
+    if (!pedidoForm.fecha_pedido) return alert('Falta la fecha del pedido');
+    if (!pedidoForm.fecha_entrega) return alert('Falta la fecha de entrega');
+    if (!pedidoForm.estado) return alert('Falta el estado');
+
+    try {
+      const pedidoPayload = {
+        fecha_pedido: pedidoForm.fecha_pedido,
+        fecha_entrega: pedidoForm.fecha_entrega,
+        estado: pedidoForm.estado,
+        detalles: detallePedidos.map(i => ({
+          id_producto: i.id_producto,
+          id_proveedor: i.id_proveedor,
+          cantidad: i.cantidad
+        }))
+      };
+
+      if (editingPedido) {
+        await axios.put(`${API_PEDIDOS}/${editingPedido.id_pedido}`, pedidoPayload);
+      } else {
+        await axios.post(API_PEDIDOS, pedidoPayload);
+      }
+
+      await cargarPedidos();
+      cerrarModal();
+    } catch (error) {
+      console.error('Error guardando pedido:', error);
+      alert('No se pudo guardar');
+    }
+  };
+
+  const eliminarPedido = async id_pedido => {
+    if (!confirm('¿Eliminar este pedido?')) return;
+
+    try {
+      await axios.delete(`${API_PEDIDOS}/${id_pedido}`);
+      setPedidos(prev => prev.filter(p => p.id_pedido !== id_pedido));
+    } catch (error) {
+      console.error('Error eliminando pedido:', error);
+      alert('No se pudo eliminar');
+    }
+  };
+
   const exportarExcel = () => {
     const data = pedidosFiltrados.flatMap(pedido =>
-      pedido.items.map(item => ({
-        ID_Pedido: pedido.id,
-        Descripcion: item.descripcion,
-        Cantidad: item.cantidad,
-        Proveedor: pedido.proveedorNombre,
-        Fecha: pedido.fecha,
+      (pedido.items || []).map(item => ({
+        ID_Pedido: pedido.id_pedido,
+        Fecha_Pedido: pedido.fecha_pedido,
+        Fecha_Entrega: pedido.fecha_entrega,
         Estado: pedido.estado,
-       
+        Producto: item.producto_descripcion,
+        Proveedor: item.proveedor_nombre,
+        Cantidad: item.cantidad
       }))
     );
 
@@ -195,11 +267,15 @@ export default function Pedidos() {
     XLSX.writeFile(wb, `pedidos_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
+  if (loading) {
+    return <div className="container">Cargando pedidos...</div>;
+  }
+
   return (
     <div className="container">
       <div className="header">
         <div className="header-left">
-          <h1 className="pedidos-title">Pedidos</h1>
+          <h1 className="inventario-title">Pedidos</h1>
         </div>
       </div>
 
@@ -207,7 +283,7 @@ export default function Pedidos() {
         <div className="filtros-izq">
           <input
             className="filtro-input search-global"
-            placeholder="🔍 Buscar pedidos..."
+            placeholder="🔍 Buscar por pedido, fecha o estado..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -215,145 +291,54 @@ export default function Pedidos() {
 
         <div className="filtros-der">
           <button className="btn-producto btn-nuevo" type="button" onClick={abrirModal}>
-            <MdAdd className="add-icon" /> Agregar producto
+            <MdAdd className="add-icon" />
+            Nuevo pedido
           </button>
-          <button className="btn-producto btn-nuevo" type="button" onClick={crearPedidosPorProveedor}>
-            ✅ Crear pedidos
-          </button>
-        </div>
-      </div>
-
-      <div className="table-container">
-        <div className="table-header">
-          <h2>Productos agregados</h2>
-        </div>
-
-        <div className="table-responsive">
-          <table className="productos-table">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Proveedor</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {items.map(it => (
-                <tr key={it.id}>
-                  <td>
-                    <code>#{it.codigo}</code>
-                  </td>
-                  <td>{it.descripcion}</td>
-                  <td>{it.cantidad}</td>
-                  <td>{proveedores.find(p => p.id === it.proveedorId)?.nombre ?? '—'}</td>
-                  <td className="acciones-cell">
-                    <button className="btn-accion editar" type="button" title="Editar" onClick={() => editarItem(it)}>
-                      ✏️
-                    </button>
-                    <button
-                      className="btn-accion eliminar"
-                      type="button"
-                      title="Eliminar"
-                      onClick={() => eliminarItem(it.id)}
-                    >
-                      🗑️
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {items.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ padding: '1rem', opacity: 0.7 }}>
-                    No hay productos agregados.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="table-container">
-        <div className="table-header">
-          <h2>Pedidos por proveedor</h2>
           <button className="btn-producto btn-nuevo" type="button" onClick={exportarExcel}>
-            📊 Exportar Excel
+            Exportar Excel
           </button>
+        </div>
+      </div>
+
+      <div className="table-container">
+        <div className="table-header">
+          <h2>Pedidos registrados</h2>
         </div>
 
         <div className="table-responsive">
-          <table className="productos-table">
+          <table className="inventario-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Proveedor</th>
-                <th>Fecha</th>
+                <th>Pedido</th>
+                <th>Fecha pedido</th>
+                <th>Fecha entrega</th>
                 <th>Estado</th>
                 <th>Items</th>
                 <th>Acciones</th>
               </tr>
             </thead>
-
             <tbody>
               {pedidosFiltrados.map(p => (
-                <tr key={p.id}>
-                  <td>
-                    <code>#{p.id}</code>
-                  </td>
-                  <td>{p.proveedorNombre}</td>
-                  <td>{p.fecha}</td>
-                  <td>
-                    <span className={`estado-badge ${p.estado === 'Pendiente' ? 'bajo' : 'activo'}`}>{p.estado}</span>
-                  </td>
-                  <td>{p.items.length}</td>
+                <tr key={p.id_pedido}>
+                  <td>{p.id_pedido}</td>
+                  <td>{p.fecha_pedido}</td>
+                  <td>{p.fecha_entrega}</td>
+                  <td>{p.estado}</td>
+                  <td>{p.items?.length || 0}</td>
                   <td className="acciones-cell">
-                    <button
-                      className="btn-accion editar"
-                      type="button"
-                      title="Pendiente"
-                      onClick={() => cambiarEstadoPedido(p.id, 'Pendiente')}
-                    >
-                      P
-                    </button>
-                    <button
-                      className="btn-accion editar"
-                      type="button"
-                      title="Realizado"
-                      onClick={() => cambiarEstadoPedido(p.id, 'Realizado')}
-                    >
-                      R
-                    </button>
-                    <button
-                      className="btn-accion editar"
-                      type="button"
-                      title="Editar pedido"
-                      onClick={() => editarPedido(p)}
-                    >
-                      ✏️
+                    <button className="btn-accion editar" onClick={() => editarPedido(p)} title="Editar">
+                      <MdEdit />
                     </button>
                     <button
                       className="btn-accion eliminar"
-                      type="button"
+                      onClick={() => eliminarPedido(p.id_pedido)}
                       title="Eliminar"
-                      onClick={() => eliminarPedido(p.id)}
                     >
-                      🗑️
+                      <MdDelete />
                     </button>
                   </td>
                 </tr>
               ))}
-
-              {pedidosFiltrados.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ padding: '1rem', opacity: 0.7 }}>
-                    No hay pedidos creados.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
@@ -366,33 +351,51 @@ export default function Pedidos() {
             if (e.target === e.currentTarget) cerrarModal();
           }}
         >
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2>{editingItem ? 'Editar producto' : 'Agregar producto'}</h2>
-            <h4 className="subtitle">Código, descripción, proveedor y cantidad</h4>
+          <div className="modal-content">
+            <h2>{editingPedido ? 'Editar pedido' : 'Nuevo pedido'}</h2>
+            <h4 className="subtitle">Agrega productos al pedido</h4>
 
-            <form onSubmit={agregarALaLista}>
-              <label>Código</label>
-              <select name="codigo" value={draft.codigo} onChange={onChangeDraft} required>
-                {catalogo.map(p => (
-                  <option key={p.codigo} value={p.codigo}>
-                    {p.codigo}
+            <form onSubmit={agregarItem}>
+              <label>Fecha pedido</label>
+              <input
+                type="date"
+                name="fecha_pedido"
+                value={pedidoForm.fecha_pedido}
+                onChange={cambiarPedidoForm}
+                required
+              />
+
+              <label>Fecha entrega</label>
+              <input
+                type="date"
+                name="fecha_entrega"
+                value={pedidoForm.fecha_entrega}
+                onChange={cambiarPedidoForm}
+                required
+              />
+
+              <label>Estado</label>
+              <select name="estado" value={pedidoForm.estado} onChange={cambiarPedidoForm} required>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Realizado">Realizado</option>
+                <option value="Cancelado">Cancelado</option>
+              </select>
+
+              <label>Producto</label>
+              <select name="id_producto" value={detalleForm.id_producto} onChange={cambiarDetalleForm} required>
+                <option value="">Seleccione un producto</option>
+                {productos.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.codigo_barras} - {p.descripcion}
                   </option>
                 ))}
               </select>
 
-              <label>Descripción</label>
-              <input
-                name="descripcion"
-                value={draft.descripcion}
-                onChange={onChangeDraft}
-                placeholder="Escribe la descripción..."
-                required
-              />
-
               <label>Proveedor</label>
-              <select name="proveedorId" value={draft.proveedorId} onChange={onChangeDraft} required>
+              <select name="id_proveedor" value={detalleForm.id_proveedor} onChange={cambiarDetalleForm} required>
+                <option value="">Seleccione un proveedor</option>
                 {proveedores.map(pr => (
-                  <option key={pr.id} value={pr.id}>
+                  <option key={pr.id_proveedor || pr.id} value={pr.id_proveedor || pr.id}>
                     {pr.nombre}
                   </option>
                 ))}
@@ -402,42 +405,68 @@ export default function Pedidos() {
               <input
                 type="number"
                 name="cantidad"
-                min={1}
-                value={draft.cantidad}
-                onChange={onChangeDraft}
                 placeholder="Cantidad"
+                min="1"
+                step="1"
+                value={detalleForm.cantidad}
+                onChange={cambiarDetalleForm}
                 required
               />
 
-              <div className="pedidos-preview">
-                <p>
-                  <strong>Proveedor:</strong> {proveedorSeleccionado?.nombre ?? '—'}
-                </p>
-              </div>
-
               <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-cancelar"
-                  onClick={() => {
-                    cerrarModal();
-                    cancelarEdicionItem();
-                  }}
-                >
-                  Cerrar
+                <button type="button" className="btn-cancelar" onClick={cerrarModal}>
+                  Cancelar
                 </button>
-
                 <button type="submit" className="btn-guardar">
-                  {editingItem ? 'Guardar cambios' : 'Agregar'}
+                  {editingDetalle ? 'Guardar ítem' : 'Agregar ítem'}
                 </button>
-
-                {editingItem && (
-                  <button type="button" className="btn-cancelar" onClick={cancelarEdicionItem}>
-                    Cancelar edición
-                  </button>
-                )}
               </div>
             </form>
+
+            <div className="table-container" style={{ marginTop: '1rem' }}>
+              <div className="table-header">
+                <h2>Ítems del pedido</h2>
+              </div>
+
+              <div className="table-responsive">
+                <table className="inventario-table">
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Proveedor</th>
+                      <th>Cantidad</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detallePedidos.map(item => (
+                      <tr key={item.id}>
+                        <td>{item.producto_descripcion}</td>
+                        <td>{item.proveedor_nombre}</td>
+                        <td>{item.cantidad}</td>
+                        <td className="acciones-cell">
+                          <button className="btn-accion editar" type="button" onClick={() => editarItem(item)}>
+                            <MdEdit />
+                          </button>
+                          <button className="btn-accion eliminar" type="button" onClick={() => eliminarItem(item.id)}>
+                            <MdDelete />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="modal-actions" style={{ marginTop: '1rem' }}>
+              <button type="button" className="btn-cancelar" onClick={cerrarModal}>
+                Cerrar
+              </button>
+              <button type="button" className="btn-guardar" onClick={handleGuardar}>
+                Guardar pedido
+              </button>
+            </div>
           </div>
         </div>
       )}

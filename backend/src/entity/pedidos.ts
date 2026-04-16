@@ -15,7 +15,7 @@ export class Pedido {
   @Column()
   estado!: string;
 
- /*@OneToMany(() => DetallePedido, detalles => detalles.pedido)
-  detalles!: DetallePedido[];*/
+ @OneToMany(() => DetallePedido, detalle => detalle.pedido, { cascade: true })
+ detalles!: DetallePedido[]
 }
 
