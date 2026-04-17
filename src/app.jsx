@@ -8,9 +8,9 @@ import Proveedores from './pages/proveedores';
 import Inventario from './pages/inventario';
 import Dashboard from './pages/dashboard';
 import Login from './pages/login';
-import  Register from './pages/registro'
+import Register from './pages/registro';
 import { AppLayout } from './layouts/AppLayout';
-import { ProtectedRoute } from './routes/protectedRoute';
+import { ProteccionRutas } from './routes/protectedRoute';
 import './styles/layout.css';
 import './styles/shared.css';
 import './styles/navbar.css';
@@ -19,9 +19,11 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
+        /*Ruta publica=Incio de sesion*/
         <Route path="/" element={<Login />} />
-        <Route path="/registro" element={<Register/>} />
-
+        //Ruta publica para registro
+        <Route path="/registro" element={<Register />} />
+        // Rutas protegidas
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />

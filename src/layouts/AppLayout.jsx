@@ -16,10 +16,11 @@ import {
 export function AppLayout() {
   const navigate = useNavigate();
 
+
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    navigate('/', { replace: true });
+    localStorage.removeItem('token') // borra la sesion
+    localStorage.removeItem('user')//borra la información del usuario 
+    navigate('/', { replace: true }); // lleva al login 
   };
 
   return (
