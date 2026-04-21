@@ -2,7 +2,6 @@ import { useMemo, useState, useEffect } from 'react';
 import { MdAdd, MdEdit, MdDelete } from 'react-icons/md';
 import axios from 'axios';
 
-
 import '../styles/shared.css';
 import '../styles/proveedores.css';
 
@@ -14,13 +13,6 @@ export default function Proveedores() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
-
-
-
-
-
-
-
 
   useEffect(() => {
     cargarProveedores();
@@ -180,7 +172,7 @@ export default function Proveedores() {
         </div>
 
         <div className="table-footer">
-          <button className="btn-ver" type="button" >
+          <button className="btn-ver" type="button">
             Ver proveedores
           </button>
         </div>
@@ -236,8 +228,10 @@ export default function Proveedores() {
               />
 
               <select name="estado" className="proveedores-modal-input" defaultValue={editing?.estado ?? 'Activo'}>
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
+                <div className="selected">
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                </div>
               </select>
 
               <div className="proveedores-modal-actions">

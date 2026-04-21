@@ -137,8 +137,8 @@ export default function Productos() {
   return (
     <div className="container">
       <div className="header">
-        <div className="header-left">
-          <h1 className="productos-title">Productos</h1>
+        <div >
+          <h1 >Productos</h1>
         </div>
       </div>
 
@@ -255,9 +255,12 @@ export default function Productos() {
               </div>
 
               <div className="form-group">
+               
                 <select name="categoria" defaultValue={editingProduct?.categoria || ''} onChange={e => {}} required>
+                  <div className='selected'>
                   <option value="">Categoría...</option>
                   <option value="papeleria">Papelería</option>
+                  </div>
                 </select>
               </div>
 
@@ -309,8 +312,9 @@ export default function Productos() {
 
               <div className="form-group">
                 <select name="estado" defaultValue={editingProduct?.estado ?? ''} required>
+                  <div className='selected'>
                   <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
+                  <option value="Inactivo">Inactivo</option></div>
                 </select>
               </div>
 

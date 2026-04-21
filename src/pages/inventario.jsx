@@ -221,10 +221,14 @@ export default function Inventario() {
 
             <form onSubmit={handleGuardar}>
               <select name="id_producto" defaultValue={editingInvent?.id_producto || ''} required>
-                <option value="">Seleccione un producto</option>
+                
+                
+                <option  value="">Seleccione un producto</option>
 
+                
                 {productos.map(p => (
-                  <option key={p.id} value={p.id}>
+                  
+                  <option className='selected'     key={p.id} value={p.id}>
                     {p.codigo_barras} - {p.descripcion}
                   </option>
                 ))}
@@ -238,9 +242,10 @@ export default function Inventario() {
                 required
               />
               <select name="tipo_movimiento" defaultValue={editingInvent?.tipo_movimiento ?? 'Entrada'}>
+                <div className='selected'>
                 <option value="entrada">Entrada</option>
                 <option value="salida">Salida</option>
-                <option value="ajuste">Ajuste</option>
+                <option value="ajuste">Ajuste</option></div>
               </select>
 
               <input

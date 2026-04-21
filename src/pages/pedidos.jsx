@@ -98,9 +98,7 @@ export default function Pedidos() {
     if (!q) return pedidos;
 
     return pedidos.filter(p =>
-      [p.id_pedido, p.fecha_pedido, p.fecha_entrega, p.estado].some(v =>
-        String(v).toLowerCase().includes(q)
-      )
+      [p.id_pedido, p.fecha_pedido, p.fecha_entrega, p.estado].some(v => String(v).toLowerCase().includes(q))
     );
   }, [pedidos, search]);
 
@@ -124,10 +122,12 @@ export default function Pedidos() {
 
   const editarPedido = pedido => {
     setEditingPedido(pedido);
-    setDetallePedidos((pedido.items || []).map(x => ({
-      ...x,
-      id: x.id_detalle_pedido || Date.now()
-    })));
+    setDetallePedidos(
+      (pedido.items || []).map(x => ({
+        ...x,
+        id: x.id_detalle_pedido || Date.now()
+      }))
+    );
     setPedidoForm({
       fecha_pedido: pedido.fecha_pedido || '',
       fecha_entrega: pedido.fecha_entrega || '',
@@ -174,9 +174,7 @@ export default function Pedidos() {
 
     setDetallePedidos(prev => {
       if (editingDetalle) {
-        return prev.map(it =>
-          it.id === editingDetalle.id ? { ...itemNuevo, id: editingDetalle.id } : it
-        );
+        return prev.map(it => (it.id === editingDetalle.id ? { ...itemNuevo, id: editingDetalle.id } : it));
       }
       return [{ ...itemNuevo, id: Date.now() }, ...prev];
     });
@@ -376,16 +374,18 @@ export default function Pedidos() {
 
               <label>Estado</label>
               <select name="estado" value={pedidoForm.estado} onChange={cambiarPedidoForm} required>
-                <option value="Pendiente">Pendiente</option>
-                <option value="Realizado">Realizado</option>
-                <option value="Cancelado">Cancelado</option>
+                <div className="selected">
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Realizado">Realizado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </div>
               </select>
 
               <label>Producto</label>
               <select name="id_producto" value={detalleForm.id_producto} onChange={cambiarDetalleForm} required>
-                <option value="">Seleccione un producto</option>
+                <option className='selected' value="">Seleccione un producto</option>
                 {productos.map(p => (
-                  <option key={p.id} value={p.id}>
+                  <option   className='selected'  key={p.id} value={p.id}>
                     {p.codigo_barras} - {p.descripcion}
                   </option>
                 ))}
@@ -393,9 +393,9 @@ export default function Pedidos() {
 
               <label>Proveedor</label>
               <select name="id_proveedor" value={detalleForm.id_proveedor} onChange={cambiarDetalleForm} required>
-                <option value="">Seleccione un proveedor</option>
+                <option className='selected' value="">Seleccione un proveedor</option>
                 {proveedores.map(pr => (
-                  <option key={pr.id_proveedor || pr.id} value={pr.id_proveedor || pr.id}>
+                  <option className='selected'  key={pr.id_proveedor || pr.id} value={pr.id_proveedor || pr.id}>
                     {pr.nombre}
                   </option>
                 ))}

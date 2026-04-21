@@ -41,7 +41,7 @@ export function AppLayout() {
         </div>
 
         <div className="navbar-center">
-          <input className="navbar-search" type="text" placeholder="Buscar productos, proveedores..." />
+          
         </div>
 
         <div className="navbar-right">

@@ -21,7 +21,7 @@ export default function Usuarios() {
     console.log('cargando usuarios');
     try {
       const res = await axios.get(API_URL);
-      console.log('si' , res.data);
+      console.log('si', res.data);
 
       const usuariosFormateados = res.data.map(u => ({
         id_usuario: u.id_usuario,
@@ -66,28 +66,25 @@ export default function Usuarios() {
 
       setListaUsuarios(prev => prev.filter(u => u.id_usuario !== id_usuario));
     } catch (error) {
-    
       await cargarUsuarios();
     }
   };
-
-  
 
   const handleGuardar = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
     console.log('formData');
 
-const newData ={
-    nombre : String(fd.get('nombre')).trim(),
-    apellido : String(fd.get('apellido')).trim(),
-    correo : String(fd.get('correo')).trim(),
-    password : String(fd.get('password')).trim(),
-    id_rol : Number(fd.get('id_rol')),
-   estado : fd.get('estado')}
+    const newData = {
+      nombre: String(fd.get('nombre')).trim(),
+      apellido: String(fd.get('apellido')).trim(),
+      correo: String(fd.get('correo')).trim(),
+      password: String(fd.get('password')).trim(),
+      id_rol: Number(fd.get('id_rol')),
+      estado: fd.get('estado')
+    };
 
-    
-console.log ( 'informacion leida')
+    console.log('informacion leida');
     try {
       if (editingUser) {
         await axios.put(`${API_URL}/${editingUser.id_usuario}`, newData);
@@ -98,7 +95,6 @@ console.log ( 'informacion leida')
 
       await cargarUsuarios();
 
-   
       setEditingUser(null);
       setShowModal(false);
       e.target.reset();
@@ -152,36 +148,34 @@ console.log ( 'informacion leida')
                 <th>Apellido</th>
                 <th>Correo</th>
                 <th>Contraseña</th>
-               
+
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              
-                {filteredUsuarios.map(u => (
-                  <tr key={u.id_usuario}>
-                    <td>{u.nombre}</td>
-                    <td>{u.apellido}</td>
-                    <td>{u.correo}</td>
-                
-                    <td>{u.id_rol === 1 ? 'Admin' : u.id_rol === 2 ? 'Cajero' : 'Responsable Inventario'}</td>
-                    <td>{u.estado ? 'Activo' : 'Inactivo'}</td>
-                    <td className="acciones-cell">
-                      <button className="btn-accion editar" onClick={() => editarUsuario(u)} title="Editar">
-                        <MdEdit />
-                      </button>
-                      <button
-                        className="btn-accion eliminar"
-                        onClick={() => eliminarUsuario(u.id_usuario)}
-                        title="Eliminar"
-                      >
-                        <MdDelete />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-            
+              {filteredUsuarios.map(u => (
+                <tr key={u.id_usuario}>
+                  <td>{u.nombre}</td>
+                  <td>{u.apellido}</td>
+                  <td>{u.correo}</td>
+
+                  <td>{u.id_rol === 1 ? 'Admin' : u.id_rol === 2 ? 'Cajero' : 'Responsable Inventario'}</td>
+                  <td>{u.estado ? 'Activo' : 'Inactivo'}</td>
+                  <td className="acciones-cell">
+                    <button className="btn-accion editar" onClick={() => editarUsuario(u)} title="Editar">
+                      <MdEdit />
+                    </button>
+                    <button
+                      className="btn-accion eliminar"
+                      onClick={() => eliminarUsuario(u.id_usuario)}
+                      title="Eliminar"
+                    >
+                      <MdDelete />
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -235,9 +229,11 @@ console.log ( 'informacion leida')
               />
 
               <select className="usuarios-modal-input" name="id_rol" defaultValue={editingUser?.id_rol ?? 1} required>
-                <option value="1">Admin</option>
-                <option value="2">Cajero</option>
-                <option value="3">Responsable Inventario</option>
+                <div className="selected ">
+                  <option value="1">Admin</option>
+                  <option value="2">Cajero</option>
+                  <option value="3">Responsable Inventario</option>
+                </div>
               </select>
 
               <select
@@ -246,8 +242,10 @@ console.log ( 'informacion leida')
                 defaultValue={editingUser?.estado ? 1 : 0}
                 required
               >
-                <option value="1">Activo</option>
-                <option value="0">Inactivo</option>
+                <div className="selected">
+                  <option value="1">Activo</option>
+                  <option value="0">Inactivo</option>
+                </div>
               </select>
 
               <div className="usuarios-modal-actions">
