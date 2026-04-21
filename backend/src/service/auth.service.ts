@@ -5,22 +5,22 @@ import jwt from 'jsonwebtoken';
 export class AuthService {
   private repo = AppDataSource.getRepository(Usuario);
 
-  //creacion de usuario nuevo 
+  //creacion de usuario nuevo
   async registro(data: Partial<Usuario>) {
     const existe = await this.repo.findOne({
       where: { correo: data.correo }
     });
     if (existe) {
-      console.log('el correo ya esta registrado ');
+      throw new Error('El correo ya está registrado');
     }
     const usuario = this.repo.create(data);
     return await this.repo.save(usuario);
   }
-//validamos usuario existente 
+  //validamos usuario existente
   async login(correo: string, password: string) {
     const userValid = await this.repo
       .createQueryBuilder('usuario') //llama a la tabla usuarios
-      .addSelect('usuario.password ')
+      .addSelect('usuario.password')
       .where('usuario.correo = :correo', { correo }) //filtra el correo
       .getOne();
 

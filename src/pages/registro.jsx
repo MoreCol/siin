@@ -1,37 +1,38 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 
 import '../styles/login.css';
 import '../styles/shared.css';
 
 export default function Register() {
   const [form, setForm] = useState({
-    nombre_completo: '',
-    nombre_usuario: '',
+    nombre: '',
+    apellido: '',
     correo: '',
-    contraseña: '',
-    confirmar_contraseña: ''
+    password: ''
   });
 
   const [errors, setErrors] = useState({});
   const [mensajeExito, setMensajeExito] = useState('');
+  const [errorServer, setErrorServer] = useState('');
 
   const navigate = useNavigate();
 
-  const validarEmail = correoValue => {
+  const validarEmail = (correoValue) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(correoValue);
   };
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       [name]: value
     }));
 
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [name]: ''
       }));
@@ -41,12 +42,12 @@ export default function Register() {
   const validarCampos = () => {
     const nuevosErrores = {};
 
-    if (!form.nombre_completo.trim()) {
-      nuevosErrores.nombre_completo = 'Ingrese su nombre completo';
+    if (!form.nombre.trim()) {
+      nuevosErrores.nombre = 'Ingrese su nombre';
     }
 
-    if (!form.nombre_usuario.trim()) {
-      nuevosErrores.nombre_usuario = 'Ingrese un nombre de usuario';
+    if (!form.apellido.trim()) {
+      nuevosErrores.apellido = 'Ingrese su apellido';
     }
 
     if (!form.correo.trim()) {
@@ -55,30 +56,40 @@ export default function Register() {
       nuevosErrores.correo = 'Ingrese un correo válido';
     }
 
-    if (!form.contraseña) {
-      nuevosErrores.contraseña = 'Digite su contraseña';
-    } else if (form.contraseña.length < 8) {
-      nuevosErrores.contraseña = 'La contraseña debe tener mínimo 8 caracteres';
-    }
-
-    if (!form.confirmar_contraseña) {
-      nuevosErrores.confirmar_contraseña = 'Confirme su contraseña';
-    } else if (form.contraseña !== form.confirmar_contraseña) {
-      nuevosErrores.confirmar_contraseña = 'Las contraseñas no coinciden';
+    if (!form.password) {
+      nuevosErrores.password = 'Digite su contraseña';
+    } else if (form.password.length < 8) {
+      nuevosErrores.password = 'La contraseña debe tener mínimo 8 caracteres';
     }
 
     setErrors(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleRegister = e => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setMensajeExito('');
+    setErrorServer('');
 
     if (!validarCampos()) return;
 
-    setMensajeExito('¡REGISTRO EXITOSO!');
-    setTimeout(() => navigate('/'), 300);
+    try {
+      await axios.post('http://localhost:3000/api/auth/register', {
+        nombre: form.nombre,
+        apellido: form.apellido,
+        correo: form.correo,
+        password: form.password,
+        estado: true,
+        id_rol: 1
+      });
+
+      setMensajeExito('¡REGISTRO EXITOSO!');
+      setTimeout(() => navigate('/'), 300);
+    } catch (error) {
+      setErrorServer(
+        error?.response?.data?.message || 'Error al registrar usuario'
+      );
+    }
   };
 
   return (
@@ -89,31 +100,31 @@ export default function Register() {
           <h1 id="login-name">Registro de Usuario</h1>
 
           <form className="login-fields" onSubmit={handleRegister}>
-            <label className="login-label" htmlFor="nombre_completo">
-              Nombre completo
+            <label className="login-label" htmlFor="nombre">
+              Nombre
             </label>
             <input
-              id="nombre_completo"
-              name="nombre_completo"
+              id="nombre"
+              name="nombre"
               type="text"
-              placeholder="Ingresa tu nombre completo"
-              value={form.nombre_completo}
+              placeholder="Ingresa tu nombre"
+              value={form.nombre}
               onChange={handleChange}
             />
-            {errors.nombre_completo && <p style={{ color: 'red', margin: 0 }}>{errors.nombre_completo}</p>}
+            {errors.nombre && <p style={{ color: 'red', margin: 0 }}>{errors.nombre}</p>}
 
-            <label className="login-label" htmlFor="nombre_usuario">
-              Nombre de usuario
+            <label className="login-label" htmlFor="apellido">
+              Apellido
             </label>
             <input
-              id="nombre_usuario"
-              name="nombre_usuario"
+              id="apellido"
+              name="apellido"
               type="text"
-              placeholder="Ingresa tu nombre de usuario"
-              value={form.nombre_usuario}
+              placeholder="Ingresa tu apellido"
+              value={form.apellido}
               onChange={handleChange}
             />
-            {errors.nombre_usuario && <p style={{ color: 'red', margin: 0 }}>{errors.nombre_usuario}</p>}
+            {errors.apellido && <p style={{ color: 'red', margin: 0 }}>{errors.apellido}</p>}
 
             <label className="login-label" htmlFor="correo">
               Correo
@@ -128,33 +139,20 @@ export default function Register() {
             />
             {errors.correo && <p style={{ color: 'red', margin: 0 }}>{errors.correo}</p>}
 
-            <label className="login-label" htmlFor="contraseña">
-              Crear contraseña
+            <label className="login-label" htmlFor="password">
+              Contraseña
             </label>
             <input
-              id="contraseña"
-              name="contraseña"
+              id="password"
+              name="password"
               type="password"
               placeholder="Crea una contraseña"
-              value={form.contraseña}
+              value={form.password}
               onChange={handleChange}
             />
-            {errors.contraseña && <p style={{ color: 'red', margin: 0 }}>{errors.contraseña}</p>}
+            {errors.password && <p style={{ color: 'red', margin: 0 }}>{errors.password}</p>}
 
-            <label className="login-label" htmlFor="confirmar_contraseña">
-              Confirmar contraseña
-            </label>
-            <input
-              id="confirmar_contraseña"
-              name="confirmar_contraseña"
-              type="password"
-              placeholder="Confirma tu contraseña"
-              value={form.confirmar_contraseña}
-              onChange={handleChange}
-            />
-            {errors.confirmar_contraseña && (
-              <p style={{ color: 'red', margin: 0 }}>{errors.confirmar_contraseña}</p>
-            )}
+            {errorServer && <p style={{ color: 'red', margin: 0 }}>{errorServer}</p>}
 
             <button className="login-button" type="submit">
               Registrarse

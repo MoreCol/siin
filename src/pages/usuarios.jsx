@@ -152,7 +152,7 @@ console.log ( 'informacion leida')
                 <th>Apellido</th>
                 <th>Correo</th>
                 <th>Contraseña</th>
-                <th>Rol</th>
+               
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -164,7 +164,7 @@ console.log ( 'informacion leida')
                     <td>{u.nombre}</td>
                     <td>{u.apellido}</td>
                     <td>{u.correo}</td>
-                    <td>{u.password}</td>
+                
                     <td>{u.id_rol === 1 ? 'Admin' : u.id_rol === 2 ? 'Cajero' : 'Responsable Inventario'}</td>
                     <td>{u.estado ? 'Activo' : 'Inactivo'}</td>
                     <td className="acciones-cell">

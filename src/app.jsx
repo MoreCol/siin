@@ -19,12 +19,10 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        /*Ruta publica=Incio de sesion*/
         <Route path="/" element={<Login />} />
-        //Ruta publica para registro
         <Route path="/registro" element={<Register />} />
-        // Rutas protegidas
-        <Route element={<ProtectedRoute />}>
+
+        <Route element={<ProteccionRutas />}>
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/productos" element={<Productos />} />

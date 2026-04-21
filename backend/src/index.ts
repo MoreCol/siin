@@ -23,7 +23,7 @@ app.use(express.json());
 conexion();
 
 // usar rutas 
-app.use("/api", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api", productRoutes);
 app.use("/api", inventRoutes );
 app.use("/api", usuariosRoutes);

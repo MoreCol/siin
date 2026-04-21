@@ -8,7 +8,7 @@ export const TokenValidation = (req:Request,res:Response, next:NextFunction)=>{
     if ( !authHeader){
         return res.status(401).json({message:'no token '})
     }
-    const token = authHeader.split('')[1]
+    const token = authHeader.split(' ')[1]
      if (!token) {
     return res.status(401).json({ message: 'Invalid token format' });
   }

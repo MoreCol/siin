@@ -1,4 +1,5 @@
 import { Outlet, useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 import '../styles/layout.css';
 
@@ -14,20 +15,27 @@ import {
 } from 'react-icons/md';
 
 export function AppLayout() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   const navigate = useNavigate();
 
-
   const handleLogout = () => {
-    localStorage.removeItem('token') // borra la sesion
-    localStorage.removeItem('user')//borra la información del usuario 
-    navigate('/', { replace: true }); // lleva al login 
+    localStorage.removeItem('token'); // borra la sesion
+    localStorage.removeItem('user'); //borra la información del usuario
+    navigate('/', { replace: true }); // lleva al login
   };
 
   return (
     <div className="layout-wrapper">
       <header className="navbar-top">
         <div className="navbar-left">
-          
           <span className="navbar-app-name">Miscelanea </span>
           <span className="navbar-app-name"> Moreno</span>
         </div>
@@ -39,7 +47,9 @@ export function AppLayout() {
         <div className="navbar-right">
           <button className="user-btn" type="button">
             <MdPerson className="nav-icon" />
-            <span>Juan S.</span> ▼
+         <span>
+          {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
+        </span>
           </button>
         </div>
       </header>

@@ -19,7 +19,7 @@ export class Usuario {
   @Column({ select: false })
   password!: string;
 
-  @Column()
+  @Column({default:2})
   id_rol!: number;
 
   @Column()
