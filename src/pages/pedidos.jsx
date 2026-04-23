@@ -344,7 +344,7 @@ export default function Pedidos() {
 
       {showModal && (
         <div
-          className="modal-overlay"
+          className="modal-overlay modal-pedido"
           onClick={e => {
             if (e.target === e.currentTarget) cerrarModal();
           }}
@@ -354,38 +354,44 @@ export default function Pedidos() {
             <h4 className="subtitle">Agrega productos al pedido</h4>
 
             <form onSubmit={agregarItem}>
-              <label>Fecha pedido</label>
-              <input
-                type="date"
-                name="fecha_pedido"
-                value={pedidoForm.fecha_pedido}
-                onChange={cambiarPedidoForm}
-                required
-              />
+              <div className="fechas-row">
+                <label>Fecha pedido</label>
+                <input
+                  type="date"
+                  name="fecha_pedido"
+                  value={pedidoForm.fecha_pedido}
+                  onChange={cambiarPedidoForm}
+                  required
+                />
 
-              <label>Fecha entrega</label>
-              <input
-                type="date"
-                name="fecha_entrega"
-                value={pedidoForm.fecha_entrega}
-                onChange={cambiarPedidoForm}
-                required
-              />
+                <label>Fecha entrega</label>
+                <input
+                  type="date"
+                  name="fecha_entrega"
+                  value={pedidoForm.fecha_entrega}
+                  onChange={cambiarPedidoForm}
+                  required
+                />
+              </div>
 
-              <label>Estado</label>
-              <select name="estado" value={pedidoForm.estado} onChange={cambiarPedidoForm} required>
-                <div className="selected">
-                  <option value="Pendiente">Pendiente</option>
-                  <option value="Realizado">Realizado</option>
-                  <option value="Cancelado">Cancelado</option>
-                </div>
-              </select>
+              <div className="estado-row">
+                <label>Estado</label>
+                <select name="estado" value={pedidoForm.estado} onChange={cambiarPedidoForm} required>
+                  <div className="selected">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Realizado">Realizado</option>
+                    <option value="Cancelado">Cancelado</option>
+                  </div>
+                </select>
+              </div>
 
               <label>Producto</label>
               <select name="id_producto" value={detalleForm.id_producto} onChange={cambiarDetalleForm} required>
-                <option className='selected' value="">Seleccione un producto</option>
+                <option className="selected" value="">
+                  Seleccione un producto
+                </option>
                 {productos.map(p => (
-                  <option   className='selected'  key={p.id} value={p.id}>
+                  <option className="selected" key={p.id} value={p.id}>
                     {p.codigo_barras} - {p.descripcion}
                   </option>
                 ))}
@@ -393,9 +399,11 @@ export default function Pedidos() {
 
               <label>Proveedor</label>
               <select name="id_proveedor" value={detalleForm.id_proveedor} onChange={cambiarDetalleForm} required>
-                <option className='selected' value="">Seleccione un proveedor</option>
+                <option className="selected" value="">
+                  Seleccione un proveedor
+                </option>
                 {proveedores.map(pr => (
-                  <option className='selected'  key={pr.id_proveedor || pr.id} value={pr.id_proveedor || pr.id}>
+                  <option className="selected" key={pr.id_proveedor || pr.id} value={pr.id_proveedor || pr.id}>
                     {pr.nombre}
                   </option>
                 ))}
@@ -423,7 +431,7 @@ export default function Pedidos() {
               </div>
             </form>
 
-            <div className="table-container" style={{ marginTop: '1rem' }}>
+            <div className="modal-pedido  table-container" style={{ marginTop: '0.5rem' }}>
               <div className="table-header">
                 <h2>Ítems del pedido</h2>
               </div>

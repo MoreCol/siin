@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 import '../styles/login.css';
 import '../styles/shared.css';
@@ -19,25 +20,26 @@ export default function Register() {
 
   const navigate = useNavigate();
 
-  const validarEmail = (correoValue) => {
+  const validarEmail = correoValue => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(correoValue);
   };
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       [name]: value
     }));
 
     if (errors[name]) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
         [name]: ''
       }));
     }
   };
+   const [verPassword, setVerPassword] = useState(false);
 
   const validarCampos = () => {
     const nuevosErrores = {};
@@ -66,7 +68,7 @@ export default function Register() {
     return Object.keys(nuevosErrores).length === 0;
   };
 
-  const handleRegister = async (e) => {
+  const handleRegister = async e => {
     e.preventDefault();
     setMensajeExito('');
     setErrorServer('');
@@ -86,9 +88,7 @@ export default function Register() {
       setMensajeExito('¡REGISTRO EXITOSO!');
       setTimeout(() => navigate('/'), 300);
     } catch (error) {
-      setErrorServer(
-        error?.response?.data?.message || 'Error al registrar usuario'
-      );
+      setErrorServer(error?.response?.data?.message || 'Error al registrar usuario');
     }
   };
 
@@ -142,14 +142,21 @@ export default function Register() {
             <label className="login-label" htmlFor="password">
               Contraseña
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Crea una contraseña"
-              value={form.password}
-              onChange={handleChange}
-            />
+            <div className="password-wrapper">
+              <input
+                id="password"
+                name="password"
+                type={verPassword ? 'text': 'password'}
+                placeholder="Crea una contraseña"
+                value={form.password}
+                onChange={handleChange}
+              />
+              <span  className='toggle-password'
+                onClick={()=>setVerPassword(!verPassword)}>
+                  {verPassword?<MdVisibilityOff /> : <MdVisibility />}
+              </span>
+            </div>
+
             {errors.password && <p style={{ color: 'red', margin: 0 }}>{errors.password}</p>}
 
             {errorServer && <p style={{ color: 'red', margin: 0 }}>{errorServer}</p>}
