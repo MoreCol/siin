@@ -45,7 +45,7 @@ export default function Inventario() {
 
   const cargarProductos = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/products');
+      const res = await axios.get('http://localhost:3000/api/products/all');
       setProductos(res.data);
     } catch (error) {
       console.error('Error productos:');

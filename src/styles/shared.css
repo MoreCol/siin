@@ -1,9 +1,9 @@
 .container {
-  margin: 0;
+ 
   width: 100%;
 
   box-sizing: border-box;
-  padding: 1rem 2rem;
+  padding: 1rem 3rem ;
   padding-top: calc(var(--topbar-h) + 0.5rem);
   max-width: 1900px;
 }
@@ -14,7 +14,7 @@
   align-items: center;
   margin-bottom: 2rem;
   gap: 1rem;
-  margin: 20px 30px 30px 
+  margin: 20px 40px 30px 
 }
 h1 {
   font-size: 2.6rem;

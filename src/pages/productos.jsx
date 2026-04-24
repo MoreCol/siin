@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/inventario.css';
 import '../styles/productos.css';
-import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import { MdEdit, MdDelete, MdAdd, MdChevronLeft, MdChevronRight } from 'react-icons/md';
 
 const API_URL = 'http://localhost:3000/api/products';
 
@@ -12,18 +12,23 @@ export default function Productos() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalProductos, setTotalProductos] = useState(1);
+  const productosPorPagina = 5;
 
   useEffect(() => {
-    cargarProductos();
-  }, []);
+    cargarProductos(paginaActual);
+  }, [paginaActual]);
 
-  const cargarProductos = async () => {
+  const cargarProductos = async (page = 1) => {
     console.log('cargando productos');
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(`${API_URL}?page=${page}&limit=${productosPorPagina}`);
+      console.log(res.data);
       console.log('respuesta!');
 
-      const productosFormateados = res.data.map(p => ({
+      const productosFormateados = res.data.data.map(p => ({
         id: p.id,
         codigo: p.codigo_barras,
         descripcion: p.descripcion,
@@ -35,6 +40,9 @@ export default function Productos() {
         estado: p.estado
       }));
       setListaProductos(productosFormateados);
+      setTotalPaginas(res.data.totalPages);
+      setTotalProductos(res.data.total);
+      //setPaginaActual(res.data.page);
     } catch (error) {
       console.log('no se pudieron cargar los productos');
     } finally {
@@ -81,7 +89,6 @@ export default function Productos() {
     if (!confirm('¿Deseas eliminar este producto permanentemente?')) return;
 
     try {
-     
       await axios.delete(`${API_URL}/${id}`);
       console.log(' Producto eliminado del servidor');
 
@@ -126,8 +133,6 @@ export default function Productos() {
       setEditingProduct(null);
       setShowModal(false);
       e.target.reset();
-
-     
     } catch (error) {
       console.error('Error al guardar:', error);
       alert('No se pudo guardar');
@@ -137,8 +142,8 @@ export default function Productos() {
   return (
     <div className="container">
       <div className="header">
-        <div >
-          <h1 >Productos</h1>
+        <div>
+          <h1>Productos</h1>
         </div>
       </div>
 
@@ -225,8 +230,26 @@ export default function Productos() {
           </table>
         </div>
 
-        <div className="table-footer">
-          <button className="btn-ver">Ver productos</button>
+        <div className="pagination">
+          <button
+            className="btn-page"
+            disabled={paginaActual === 1}
+            onClick={() => setPaginaActual(prev => Math.max(prev - 1, 1))}
+          >
+              <MdChevronLeft />
+          </button>
+
+          <span>
+            Página {paginaActual} de {totalPaginas}
+          </span>
+
+          <button
+            className="btn-page"
+            disabled={paginaActual === totalPaginas}
+            onClick={() => setPaginaActual(prev => Math.min(prev + 1, totalPaginas))}
+          >
+            <MdChevronRight />
+          </button>
         </div>
       </div>
 
@@ -255,11 +278,10 @@ export default function Productos() {
               </div>
 
               <div className="form-group">
-               
                 <select name="categoria" defaultValue={editingProduct?.categoria || ''} onChange={e => {}} required>
-                  <div className='selected'>
-                  <option value="">Categoría...</option>
-                  <option value="papeleria">Papelería</option>
+                  <div className="selected">
+                    <option value="">Categoría...</option>
+                    <option value="papeleria">Papelería</option>
                   </div>
                 </select>
               </div>
@@ -312,9 +334,10 @@ export default function Productos() {
 
               <div className="form-group">
                 <select name="estado" defaultValue={editingProduct?.estado ?? ''} required>
-                  <div className='selected'>
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option></div>
+                  <div className="selected">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                  </div>
                 </select>
               </div>
 

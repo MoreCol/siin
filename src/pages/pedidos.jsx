@@ -78,7 +78,7 @@ export default function Pedidos() {
   const cargarProductos = async () => {
     try {
       const res = await axios.get(API_PRODUCTOS);
-      setProductos(res.data);
+      setProductos(res.data.data);
     } catch (error) {
       console.error('Error cargando productos:', error);
     }

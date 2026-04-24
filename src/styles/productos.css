@@ -160,7 +160,17 @@
  
 }
 
+.pagination{
+  display: flex;
+  margin-top: 1rem;
+  gap: 0.8rem;
+  justify-content: end;
 
+}
+.pagination button{
+     
+      color:#060606
+}
 
 @media (max-width: 768px) {
   
