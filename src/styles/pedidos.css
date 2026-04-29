@@ -251,3 +251,7 @@
   padding: 1.5rem 2.5rem;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
 }
+.estado-badge.pendiente { background: rgba(234, 179, 8, 0.15);  color: #ca8a04;  padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
+.estado-badge.enviado   { background: rgba(59, 130, 246, 0.15); color: #3b82f6;  padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
+.estado-badge.recibido  { background: rgba(16, 185, 129, 0.15); color: #059669;  padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }
+.estado-badge.cancelado { background: rgba(239, 68, 68, 0.15);  color: #ef4444;  padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; }

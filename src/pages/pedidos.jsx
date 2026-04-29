@@ -240,6 +240,20 @@ export default function Pedidos() {
       alert('No se pudo eliminar');
     }
   };
+  const cambiarEstadoPedido = async (id_pedido, nuevoEstado) => {
+    try {
+      await axios.put(`${API_PEDIDOS}/${id_pedido}`, { estado: nuevoEstado });
+      const pedidoActualziado = pedidos.map(p => {
+        if (p.id_pedido === id_pedido) {
+          return { p, estado: nuevoEstado.toLowerCase() };
+        }
+        return p;
+      });
+      setPedidos(pedidosActualizados);
+    } catch (error) {
+      alert('no se eude cambiar estado');
+    }
+  };
 
   const exportarExcel = () => {
     const data = pedidosFiltrados.flatMap(pedido =>
@@ -321,7 +335,12 @@ export default function Pedidos() {
                   <td>{p.id_pedido}</td>
                   <td>{p.fecha_pedido}</td>
                   <td>{p.fecha_entrega}</td>
-                  <td>{p.estado}</td>
+                  <td>
+                    <span className={`estado-badge ${p.estado.toLowerCase()}`}> {p.estado} </span>
+                    {p.estado === 'Enviado' && (
+                      <button onClick={() => cambiarEstadoPedido(Pedidos.id_pedido, 'Recibido')}></button>
+                    )}
+                  </td>
                   <td>{p.items?.length || 0}</td>
                   <td className="acciones-cell">
                     <button className="btn-accion editar" onClick={() => editarPedido(p)} title="Editar">
@@ -379,7 +398,8 @@ export default function Pedidos() {
                 <select name="estado" value={pedidoForm.estado} onChange={cambiarPedidoForm} required>
                   <div className="selected">
                     <option value="Pendiente">Pendiente</option>
-                    <option value="Realizado">Realizado</option>
+                    <option value="Enviado">Enviado</option>
+                    <option value="Recibido">Recibido</option>
                     <option value="Cancelado">Cancelado</option>
                   </div>
                 </select>

@@ -27,8 +27,7 @@
   padding: 16px;
   padding-bottom: 24px;
   background-color: var(--bg-app);
-  box-sizing: border-box;
-}
+  }
 
 /* NAVBAR TOP*/
 .navbar-top {

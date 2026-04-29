@@ -24,7 +24,7 @@ export const AppDataSource = new DataSource({
 export const conexion= async() =>{
   try {
     await AppDataSource.initialize();
-    console.log(' TypeORM + PostgreSQL CONECTADO!');
+    console.log('Conexion Exitosa => BD');
   } catch (error) {
     console.error(' Error TypeORM:', error);
   }

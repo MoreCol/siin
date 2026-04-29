@@ -49,7 +49,7 @@ export class InventService {
       } else if (invent.tipo_movimiento === 'salida') {
         producto.stock_actual += cantidadAnterior; // revierte salida
       }
-      const cantidadNueva = Number(data.cantidad);
+      const cantidadNueva = Number(data.cantidad ?? invent.cantidad);
       if (data.tipo_movimiento === 'entrada') {
         producto.stock_actual += cantidadNueva;
       } else if (data.tipo_movimiento === 'salida') {
