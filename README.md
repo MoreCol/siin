@@ -1,1 +1,1 @@
- sistema de inventario
+Sistema de Inventario
