@@ -1,0 +1,177 @@
+/* index.css */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Open Sans',
+    'Helvetica Neue',
+    sans-serif;
+}
+
+/* LOGIN WRAPPER - El contenedor padre */
+.login-wrapper {
+  min-height: 100vh;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 20px;
+  justify-content: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.login-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0.9;
+  color: #524e4e;
+}
+
+/* LOGIN CARD - La tarjeta blanca */
+.login-card {
+  width: clamp(300px, 60vw, 430px);
+  padding: 44px 28px;
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+  box-shadow: 0 20px 60px rgba(47, 32, 32, 0.35);
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  gap: 20px;
+}
+
+#login-name {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+.empresa-nombre {
+  text-align: left;
+  font-size: 17px;
+  letter-spacing: em;
+  opacity: 1;
+  color: #245caa;
+  font-weight: 700;
+}
+
+.login-fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.login-fields input {
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+
+.login-fields input:focus {
+  outline: none;
+  border-color: #91bae5;
+  box-shadow: 0 0 5px rgba(44, 65, 87, 0.3);
+}
+
+.login-button {
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: #007bff; /* Azul (según tu especificación SIIN) */
+  color: white;
+  transition: 0.3s;
+  width: 100%;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.login-button:hover {
+  background-color: #0056b3; /* Azul oscuro al pasar mouse */
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.error-message {
+  color: #dc3545; /* Rojo para errores (según SIIN) */
+  font-size: 0.85rem;
+  margin-top: 5px;
+  text-align: left;
+}
+
+.p-exito {
+  color: #28a745; /* Verde para éxito */
+  font-weight: bold;
+  margin-top: 20px;
+  font-size: 15px;
+}
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+.toggle-password {
+  color: #0056b3;
+  position: absolute;
+  right: 0.9rem;
+  display: flex;
+  align-items: center;
+  align-items: center;
+  transform: translateY(-50%);
+  top: 50%;
+  font-size: 1.3rem;
+}
+.toggle-password:hover{
+  color: #007BFF;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.login-card {
+  animation: fadeIn 0.3s ease-in;
+}
