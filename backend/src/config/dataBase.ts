@@ -11,18 +11,17 @@ import { Venta } from '../entity/ventas';
 import { DetalleVenta } from '../entity/detalleVentas';
 
 dotenv.config();
-
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || "localhost",
-  port: parseInt(process.env.DB_PORT ||'5432'),
+  port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   synchronize: false,
-  entities: [Product,Invent,Usuario,Rol, Proveedor, Pedido,DetallePedido, Venta, DetalleVenta]
+  ssl: { rejectUnauthorized: false },
+  entities: [Product, Invent, Usuario, Rol, Proveedor, Pedido, DetallePedido, Venta, DetalleVenta]
 });
-
 export const conexion= async() =>{
   try {
     await AppDataSource.initialize();
