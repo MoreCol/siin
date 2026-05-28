@@ -1,13 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
-import { Invent } from "./inventario";
-import { DetallePedido } from "./detallePedido";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Invent } from './inventario';
+import { DetallePedido } from './detallePedido';
+import { DetalleVenta } from './detalleVentas';
 
-@Entity("productos")
+@Entity('productos')
 export class Product {
-  //ID AUTOINCREMENTAL 
+  //ID AUTOINCREMENTAL
   @PrimaryGeneratedColumn()
   id!: number;
-   
+
   @Column()
   codigo_barras!: string;
 
@@ -17,10 +18,10 @@ export class Product {
   @Column()
   categoria!: string;
 
-  @Column("decimal")
+  @Column('decimal')
   precio_compra!: number;
 
-  @Column("decimal")
+  @Column('decimal')
   precio_venta!: number;
 
   @Column()
@@ -35,8 +36,11 @@ export class Product {
   @Column()
   estado!: string;
 
-  @OneToMany(()=> Invent, invent=> invent.producto)
-  inventario_movimientos!:Invent[]
-  @OneToMany(()=> DetallePedido, detalle=> detalle.producto)
-  detalle_pedido!:DetallePedido[]
+  @OneToMany(() => Invent, invent => invent.producto)
+  inventario_movimientos!: Invent[];
+  @OneToMany(() => DetallePedido, detalle => detalle.producto)
+  detalle_pedido!: DetallePedido[];
+
+   @OneToMany(() => DetalleVenta, detalleVenta => DetalleVenta.producto)
+   detallesVenta: DetalleVenta[] | undefined;
 }

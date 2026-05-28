@@ -1,13 +1,15 @@
 import { AppDataSource } from '../config/dataBase';
 import { Invent } from '../entity/inventario';
 import { Product } from '../entity/product';
+import { Usuario } from '../entity/usuarios';
 
 export class InventService {
   private repo = AppDataSource.getRepository(Invent);
   private repoProducto = AppDataSource.getRepository(Product);
+  private repoUsuario = AppDataSource.getRepository(Usuario)
   async findAll() {
     return await this.repo.find({
-      relations: ['producto'],
+      relations: ['producto', 'usuario'],
       order: { fecha_movimiento: 'DESC' }
     });
   }

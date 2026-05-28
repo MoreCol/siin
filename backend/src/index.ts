@@ -7,6 +7,7 @@ import proveedoresRouter from "./routes/proveedores.routes"
 import pedidosRouter from "./routes/pedidos.routes"
 import detallePedidoRouter from "./routes/detallePedido.routes"
 import authRoutes from "./routes/auth.routes"
+import ventaRoutes from "./routes/venta.routes"
 import { conexion } from "./config/dataBase";
 
 
@@ -30,6 +31,7 @@ app.use("/api", usuariosRoutes);
 app.use("/api", proveedoresRouter);
 app.use("/api", pedidosRouter);
 app.use("/api", detallePedidoRouter);
+app.use('/api', ventaRoutes);
 
 
 

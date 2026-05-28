@@ -11,9 +11,9 @@ import Login from './pages/login';
 import Register from './pages/registro';
 import { AppLayout } from './layouts/AppLayout';
 import { ProteccionRutas } from './routes/protectedRoute';
-import './styles/layout.css';
+/*import './styles/layout.css';
 import './styles/shared.css';
-import './styles/navbar.css';
+import './styles/navbar.css';*/
 
 export function App() {
   return (

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 import '../styles/login.css';
-import '../styles/shared.css';
+
 
 export default function Login() {
   const [correo, setCorreo] = useState('');

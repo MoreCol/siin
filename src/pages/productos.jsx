@@ -1,32 +1,31 @@
 import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/inventario.css';
-import '../styles/productos.css';
+
 import { MdEdit, MdDelete, MdAdd, MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { FilterBar } from '../components/ui/filterBar';
+import { Button } from '../components/ui/Button';
 
 const API_URL = 'http://localhost:3000/api/products';
 
 export default function Productos() {
   const [ListaProductos, setListaProductos] = useState([]);
   const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paginaActual, setPaginaActual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
-  const [totalProductos, setTotalProductos] = useState(1);
   const productosPorPagina = 5;
+
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
+  const [disponibilidadFiltro, setDisponibilidadFiltro] = useState('');
 
   useEffect(() => {
     cargarProductos(paginaActual);
   }, [paginaActual]);
 
   const cargarProductos = async (page = 1) => {
-    console.log('cargando productos');
     try {
       const res = await axios.get(`${API_URL}?page=${page}&limit=${productosPorPagina}`);
-      console.log(res.data);
-      console.log('respuesta!');
 
       const productosFormateados = res.data.data.map(p => ({
         id: p.id,
@@ -39,36 +38,15 @@ export default function Productos() {
         stock_Minimo: p.stock_minimo,
         estado: p.estado
       }));
-      console.log('productosFormateados:', productosFormateados);
-      const productosOrdenados = [...productosFormateados];
 
-      setListaProductos(productosOrdenados);
+      setListaProductos(productosFormateados);
       setTotalPaginas(res.data.totalPages);
-      setTotalProductos(res.data.total);
     } catch (error) {
-      console.log('no se pudieron cargar los productos');
+      console.error('No se pudieron cargar productos', error);
     } finally {
       setLoading(false);
     }
   };
-
-  const filteredProductos = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return ListaProductos;
-
-    return ListaProductos.filter(p =>
-      [
-        p.codigo,
-        p.descripcion,
-        p.categoria,
-        p.precio_Compra,
-        p.precio_Venta,
-        p.stock_Actual,
-        p.stock_Minimo,
-        p.estado
-      ].some(v => String(v).toLowerCase().includes(q))
-    );
-  }, [ListaProductos, search]);
 
   const getStockClass = (stockActual, stockMinimo = 5) => {
     if (stockActual === 0) return 'agotado';
@@ -82,33 +60,58 @@ export default function Productos() {
     return 'Disponible';
   };
 
+  const filteredProductos = useMemo(() => {
+    const q = search.trim().toLowerCase();
+
+    return ListaProductos.filter(p => {
+      const coincideBusqueda =
+        !q ||
+        [
+          p.codigo,
+          p.descripcion,
+          p.categoria,
+          p.precio_Compra,
+          p.precio_Venta,
+          p.stock_Actual,
+          p.stock_Minimo,
+          p.estado
+        ].some(v => String(v).toLowerCase().includes(q));
+
+      const coincideCategoria = !categoriaFiltro || p.categoria.toLowerCase() === categoriaFiltro.toLowerCase();
+
+      const disponibilidad = getDisponibilidad(p.stock_Actual, p.stock_Minimo);
+
+      const coincideDisponibilidad = !disponibilidadFiltro || disponibilidad === disponibilidadFiltro;
+
+      return coincideBusqueda && coincideCategoria && coincideDisponibilidad;
+    });
+  }, [ListaProductos, search, categoriaFiltro, disponibilidadFiltro]);
+
   const editarProducto = producto => {
     setEditingProduct(producto);
-    setShowModal(true);
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const eliminarProducto = async id => {
-    if (!confirm('¿Deseas eliminar este producto permanentemente?')) return;
+    if (!confirm('¿Deseas eliminar este producto?')) return;
 
     try {
       await axios.delete(`${API_URL}/${id}`);
-      console.log(' Producto eliminado del servidor');
-
-      //  Actualiza frontend
       setListaProductos(prev => prev.filter(p => p.id !== id));
     } catch (error) {
-      console.error(' Error eliminando:', error.response?.data || error.message);
-      alert('No se pudo eliminar el producto');
-
-      // Si falla, recargar desde servidor
-      await cargarProductos();
+      console.error(error);
+      alert('No se pudo eliminar');
     }
   };
 
   const handleGuardar = async e => {
     e.preventDefault();
+
     const fd = new FormData(e.target);
-    console.log('formData');
 
     const productData = {
       codigo_barras: String(fd.get('codigo')).trim(),
@@ -125,119 +128,318 @@ export default function Productos() {
     try {
       if (editingProduct) {
         await axios.put(`${API_URL}/${editingProduct.id}`, productData);
-        console.log('producto actualizado');
       } else {
         await axios.post(API_URL, productData);
-        console.log('producto creado');
       }
 
       await cargarProductos();
+
       setEditingProduct(null);
-      setShowModal(false);
       e.target.reset();
     } catch (error) {
-      console.error('Error al guardar:', error);
+      console.error(error);
       alert('No se pudo guardar');
     }
   };
 
   return (
-    <div className="container">
-      <div className="header">
-        <div>
-          <h1>Productos</h1>
-        </div>
-      </div>
+    <div className="mx-auto">
+      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">Productos</h1>
 
-      <div className="filtros-bar">
-        <div className="filtros-izq">
+      {/* FORMULARIO */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
+        <div className="flex justify-between items-center !mb-6">
+          <h2 className="text-2xl font-semibold text-slate-800">
+            {editingProduct ? 'Editar producto' : 'Nuevo producto'}
+          </h2>
+
+          {editingProduct && (
+            <Button variant="cancel" onClick={() => setEditingProduct(null)}>
+              Cancelar edición
+            </Button>
+          )}
+        </div>
+
+        <form onSubmit={handleGuardar}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
+            <input
+              name="codigo"
+              defaultValue={editingProduct?.codigo}
+              placeholder="Código"
+              required
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <select
+              name="categoria"
+              defaultValue={editingProduct?.categoria || ''}
+              required
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            >
+              <option value="">Categoría...</option>
+              <option value="Material Escolar">Material Escolar</option>
+              <option value="Material de Oficina">Material de Oficina</option>
+            </select>
+
+            <select
+              name="estado"
+              defaultValue={editingProduct?.estado ?? 'Activo'}
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            >
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
+
+            <input
+              name="descripcion"
+              defaultValue={editingProduct?.descripcion}
+              placeholder="Descripción del producto"
+              required
+              className="md:col-span-2 rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <input
+              type="number"
+              name="precio_Compra"
+              defaultValue={editingProduct?.precio_Compra}
+              placeholder="Precio compra"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <input
+              type="number"
+              name="precio_Venta"
+              defaultValue={editingProduct?.precio_Venta}
+              placeholder="Precio venta"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <input
+              type="number"
+              name="stock_Actual"
+              defaultValue={editingProduct?.stock_Actual}
+              placeholder="Stock actual"
+              className="rounded-xl border border-slate-300 'px-4 !py-3"
+            />
+
+            <input
+              type="number"
+              name="stock_Minimo"
+              defaultValue={editingProduct?.stock_Minimo}
+              placeholder="Stock mínimo"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+          </div>
+
+          <div className="flex justify-end !gap-3 !mt-6">
+            <Button type="button" variant="cancel" onClick={() => setEditingProduct(null)}>
+              Limpiar
+            </Button>
+
+            <Button type="submit" variant="primary">
+              Guardar producto
+            </Button>
+          </div>
+        </form>
+      </section>
+
+      {/* FILTROS */}
+      <FilterBar
+        search={
           <input
-            className="filtro-input search-global"
-            placeholder="🔍 Buscar por descripción/código..."
+            placeholder="Buscar producto..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            className="w-full outline-none bg-transparent"
           />
-        </div>
-        <div className="filtros-der">
-          <button
-            className="btn-producto btn-nuevo"
-            onClick={() => {
-              setEditingProduct(null);
-              setShowModal(true);
-            }}
+        }
+        categoria={
+          <select
+            value={categoriaFiltro}
+            onChange={e => setCategoriaFiltro(e.target.value)}
+            className="w-full bg-transparent"
           >
-            <MdAdd className="add-icon" />
-            Nuevo Producto
-          </button>
-        </div>
-      </div>
+            <option value="">Todas las categorías</option>
+            <option value="Material Escolar">Material Escolar</option>
+            <option value="Material de Oficina">Material de Oficina</option>
+          </select>
+        }
+        disponibilidad={
+          <select
+            value={disponibilidadFiltro}
+            onChange={e => setDisponibilidadFiltro(e.target.value)}
+            className="w-full bg-transparent"
+          >
+            <option value="">Toda disponibilidad</option>
+            <option value="Disponible">Disponible</option>
+            <option value="Bajo">Bajo</option>
+            <option value="Agotado">Agotado</option>
+          </select>
+        }
+      />
 
-      <div className="table-container">
-        <div className="table-header">
-          <h2>Lista de productos</h2>
-        </div>
-
-        <div className="table-responsive">
-          <table className="productos-table">
+      {/* TABLA */}
+      <div className="mt-6">
+        <div
+          className="
+      overflow-x-auto
+      w-full
+      rounded-2xl
+      shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+      min-w-0
+      bg-white
+    "
+        >
+          <table
+            className="
+        w-full
+        min-w-[900px]
+        border-collapse
+        overflow-hidden
+        rounded-2xl
+        bg-white
+      "
+          >
             <thead>
-              <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Categoría</th>
-                <th>Precio Compra</th>
-                <th>Precio Venta</th>
-                <th>Stock Actual</th>
-                <th>Stock Mínimo</th>
-                <th>Disponibilidad</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {[
+                  'Código',
+                  'Descripción',
+                  'Categoría',
+                  'Precio Compra',
+                  'Precio Venta',
+                  'Stock',
+                  'Estado',
+                  'Acciones'
+                ].map(header => (
+                  <th
+                    key={header}
+                    className="
+                bg-gradient-to-br
+                from-slate-50
+                to-slate-100
+                !px-4
+                !py-5
+                text-left
+                text-[0.9rem]
+                font-semibold
+                uppercase
+                tracking-[0.5px]
+                text-gray-700
+                border-b-2
+                border-slate-200
+              "
+                  >
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
 
             <tbody>
               {filteredProductos.map(producto => (
-                <tr key={producto.id} className={getStockClass(producto.stock_Actual, producto.stock_Minimo)}>
-                  <td>
-                    <code>#{producto.codigo}</code>
+                <tr
+                  key={producto.id}
+                  className="
+              hover:bg-blue-500/5
+              transition-colors
+            "
+                >
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">#{producto.codigo}</td>
+
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{producto.descripcion}</td>
+
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                    <span
+                      className="
+                  inline-flex
+                  rounded-full
+                  bg-blue-500/15
+                  !px-3
+                  !py-1.5
+                  text-sm
+                  font-semibold
+                  text-blue-500
+                "
+                    >
+                      {producto.categoria}
+                    </span>
                   </td>
-                  <td>{producto.descripcion}</td>
-                  <td>{producto.categoria}</td>
-                  <td>${Number(producto.precio_Compra).toLocaleString()}</td>
-                  <td>${Number(producto.precio_Venta).toLocaleString()}</td>
-                  <td>{producto.stock_Actual}</td>
-                  <td>{producto.stock_Minimo}</td>
-                  <td className="stock-cell">
-                    <span className={`stock-indicator ${getStockClass(producto.stock_Actual, producto.stock_Minimo)}`}>
+
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                    ${producto.precio_Compra.toLocaleString()}
+                  </td>
+
+                  <td className="!px-8 py-5 border-b border-slate-100 align-middle">
+                    ${producto.precio_Venta.toLocaleString()}
+                  </td>
+
+                  <td
+                    className="
+                !px-8 !py-5
+                border-b border-slate-100
+                align-middle
+                font-semibold
+                text-base
+              "
+                  >
+                    <span
+                      className={`
+                  inline-flex
+                  rounded-xl
+                  !px-3
+                  !py-1
+                  text-sm
+                  font-semibold
+                  ${
+                    getDisponibilidad(producto.stock_Actual, producto.stock_Minimo) === 'Disponible'
+                      ? 'bg-emerald-500/20 text-emerald-600'
+                      : getDisponibilidad(producto.stock_Actual, producto.stock_Minimo) === 'Bajo'
+                        ? 'bg-yellow-400/20 text-amber-600'
+                        : 'bg-red-500/20 text-red-600'
+                  }
+                `}
+                    >
                       {getDisponibilidad(producto.stock_Actual, producto.stock_Minimo)}
                     </span>
                   </td>
-                  <td>
-                    <span className={`estado-badge ${producto.estado.toLowerCase()}`}>{producto.estado}</span>
-                  </td>
-                  <td className="acciones-cell">
-                    <button className="btn-accion editar" onClick={() => editarProducto(producto)} title="Editar">
-                      <MdEdit />
-                    </button>
-                    <button
-                      className="btn-accion eliminar"
-                      onClick={() => eliminarProducto(producto.id)}
-                      title="Eliminar"
+
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                    <span
+                      className={`
+                  inline-flex
+                  rounded-full
+                  !px-3
+                  !py-1.5
+                  text-sm
+                  font-semibold
+                  ${
+                    producto.estado === 'Activo' ? 'bg-emerald-500/20 text-emerald-600' : 'bg-red-500/20 text-slate-900'
+                  }
+                `}
                     >
-                      <MdDelete />
-                    </button>
+                      {producto.estado}
+                    </span>
+                  </td>
+
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                    <div className="flex items-center !gap-3">
+                      <Button variant="edit" onClick={() => editarProducto(producto)}>
+                        <MdEdit />
+                      </Button>
+
+                      <Button variant="delete" onClick={() => eliminarProducto(producto.id)}>
+                        <MdDelete />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        <div className="pagination">
-          <button
-            className="btn-page"
-            disabled={paginaActual === 1}
-            onClick={() => setPaginaActual(prev => Math.max(prev - 1, 1))}
-          >
+        <div className="pagination mt-4 flex justify-center gap-4">
+          <button disabled={paginaActual === 1} onClick={() => setPaginaActual(prev => Math.max(prev - 1, 1))}>
             <MdChevronLeft />
           </button>
 
@@ -246,7 +448,6 @@ export default function Productos() {
           </span>
 
           <button
-            className="btn-page"
             disabled={paginaActual === totalPaginas}
             onClick={() => setPaginaActual(prev => Math.min(prev + 1, totalPaginas))}
           >
@@ -254,107 +455,6 @@ export default function Productos() {
           </button>
         </div>
       </div>
-
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={e => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <div className="modal-content">
-            <h2>{editingProduct ? 'Editar' : 'Nuevo'} producto</h2>
-
-            <form onSubmit={handleGuardar}>
-              <div className="form-group">
-                <input name="codigo" defaultValue={editingProduct?.codigo} placeholder="Código" required />
-              </div>
-
-              <div className="form-group">
-                <input
-                  name="descripcion"
-                  defaultValue={editingProduct?.descripcion}
-                  placeholder="Descripción del producto"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <select name="categoria" defaultValue={editingProduct?.categoria || ''} onChange={e => {}} required>
-                  <div className="selected">
-                    <option value="">Categoría...</option>
-                    <option value="papeleria">Papelería</option>
-                  </div>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="number"
-                  name="precio_Compra"
-                  defaultValue={editingProduct?.precio_Compra}
-                  min="0"
-                  step="0.01"
-                  placeholder="Precio de compra"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="number"
-                  name="precio_Venta"
-                  defaultValue={editingProduct?.precio_Venta}
-                  min="0"
-                  step="0.01"
-                  placeholder="Precio de venta"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="number"
-                  name="stock_Actual"
-                  defaultValue={editingProduct?.stock_Actual}
-                  min="0"
-                  placeholder="Stock actual"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="number"
-                  name="stock_Minimo"
-                  defaultValue={editingProduct?.stock_Minimo}
-                  min="0"
-                  placeholder="Stock mínimo"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <select name="estado" defaultValue={editingProduct?.estado ?? ''} required>
-                  <div className="selected">
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                  </div>
-                </select>
-              </div>
-
-              <div className="modal-actions">
-                <button type="button" className="btn-cancelar" onClick={() => setShowModal(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-guardar">
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

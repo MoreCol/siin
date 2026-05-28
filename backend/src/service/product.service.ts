@@ -17,7 +17,6 @@ export class ProductService {
    // return this.repo.find();
    return{
     data,
-    
     total,
     page,
     totalPages:Math.ceil(total/limit)

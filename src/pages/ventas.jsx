@@ -1,484 +1,504 @@
-import { useMemo, useState } from "react";
-import "../styles/shared.css";
-import "../styles/ventas.css"; // opcional (puede estar vacío si no quieres extra)
-import { MdAdd} from "react-icons/md";
+import { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
+import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import * as XLSX from 'xlsx';
+import { Button } from '../components/ui/Button';
+import { FilterBar } from '../components/ui/filterBar';
+
+const API_VENTAS = 'http://localhost:3000/api/ventas';
+const API_PRODUCTOS = 'http://localhost:3000/api/products';
+
+const initialVenta = {
+  id_usuario: 74,
+  fecha_venta: '',
+  metodo_pago: 'Efectivo',
+  estado: 'Pagado'
+};
+
+const initialItem = { id_producto: '', cantidad: 1 };
 
 export default function Ventas() {
-  // Catálogo demo (puedes conectarlo con tu módulo Productos)
-  const [catalogo] = useState([
-    { codigo: "P001", descripcion: "Cuaderno espiral", precio: 4500 },
-    { codigo: "P002", descripcion: "Lapicero", precio: 1200 },
-    { codigo: "P003", descripcion: "Borrador", precio: 800 },
-  ]);
-
-  // Modal
-  const [showModal, setShowModal] = useState(false);
-
-  // Venta en edición (factura)
-  const [factura, setFactura] = useState({
-    cliente: "",
-    fecha: new Date().toISOString().slice(0, 10),
-    metodoPago: "Efectivo",
-  });
-
-  // Item draft (para agregar a factura)
-  const [draft, setDraft] = useState({
-    codigo: catalogo[0]?.codigo ?? "P001",
-    descripcion: "", // editable si quieres
-    cantidad: 1,
-    precioUnitario: catalogo[0]?.precio ?? 0,
-  });
-
-  // Items de la factura actual
-  // item: {id, codigo, descripcion, cantidad, precioUnitario}
-  const [items, setItems] = useState([]);
-  const [editingItem, setEditingItem] = useState(null);
-
-  // Ventas creadas
-  // venta: {id, cliente, fecha, metodoPago, estado, items, total}
   const [ventas, setVentas] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [ventaForm, setVentaForm] = useState(initialVenta);
+  const [itemForm, setItemForm] = useState(initialItem);
+  const [items, setItems] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [editingVenta, setEditingVenta] = useState(null);
+  const [expandido, setExpandido] = useState(null);
 
-  // Buscar
-  const [search, setSearch] = useState("");
+  // ─── carga ────────────────────────────────────────────────
+  useEffect(() => {
+    cargarVentas();
+    cargarProductos();
+  }, []);
 
-  const productoSeleccionado = useMemo(() => {
-    return catalogo.find((p) => p.codigo === draft.codigo) ?? null;
-  }, [catalogo, draft.codigo]);
-
-  const onChangeFactura = (e) => {
-    const { name, value } = e.target;
-    setFactura((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const onChangeDraft = (e) => {
-    const { name, value } = e.target;
-
-    // Si cambia el código, sugerimos precio y descripción del catálogo (pero quedan editables)
-    if (name === "codigo") {
-      const prod = catalogo.find((p) => p.codigo === value);
-      setDraft((prev) => ({
-        ...prev,
-        codigo: value,
-        precioUnitario: prod?.precio ?? prev.precioUnitario,
-        descripcion: prev.descripcion || (prod?.descripcion ?? ""),
-      }));
-      return;
-    }
-
-    setDraft((prev) => ({
-      ...prev,
-      [name]:
-        name === "cantidad" || name === "precioUnitario"
-          ? Number(value)
-          : value,
-    }));
-  };
-
-  const abrirCrearVenta = () => {
-    setFactura({
-      cliente: "",
-      fecha: new Date().toISOString().slice(0, 10),
-      metodoPago: "Efectivo",
-    });
-    setDraft({
-      codigo: catalogo[0]?.codigo ?? "P001",
-      descripcion: "",
-      cantidad: 1,
-      precioUnitario: catalogo[0]?.precio ?? 0,
-    });
-    setItems([]);
-    setEditingItem(null);
-    setShowModal(true);
-  };
-
-  const cerrarModal = () => {
-    setShowModal(false);
-    setEditingItem(null);
-  };
-
-  const agregarItem = (e) => {
-    e.preventDefault();
-
-    const cantidad = Number(draft.cantidad);
-    if (!cantidad || cantidad < 1) return alert("Cantidad inválida");
-
-    const precioUnitario = Number(draft.precioUnitario);
-    if (!precioUnitario || precioUnitario < 0) return alert("Precio inválido");
-
-    // Si no escribieron descripción, usamos la del catálogo si existe
-    const descripcionFinal =
-      draft.descripcion.trim() || productoSeleccionado?.descripcion || "";
-
-    if (!descripcionFinal) return alert("Falta la descripción");
-
-    const itemNuevo = {
-      id: editingItem ? editingItem.id : Date.now(),
-      codigo: draft.codigo.trim(),
-      descripcion: descripcionFinal,
-      cantidad,
-      precioUnitario,
-    };
-
-    setItems((prev) => {
-      if (editingItem) {
-        return prev.map((it) => (it.id === editingItem.id ? itemNuevo : it));
-      }
-      return [itemNuevo, ...prev];
-    });
-
-    setEditingItem(null);
-    setDraft((prev) => ({ ...prev, cantidad: 1, descripcion: "" }));
-  };
-
-  const editarItem = (it) => {
-    setEditingItem(it);
-    setDraft({
-      codigo: it.codigo,
-      descripcion: it.descripcion,
-      cantidad: it.cantidad,
-      precioUnitario: it.precioUnitario,
-    });
-  };
-
-  const eliminarItem = (id) => {
-    setItems((prev) => prev.filter((it) => it.id !== id));
-    if (editingItem?.id === id) setEditingItem(null);
-  };
-
-  const subtotal = useMemo(() => {
-    return items.reduce((acc, it) => acc + it.cantidad * it.precioUnitario, 0);
-  }, [items]);
-
-  const crearVenta = () => {
-    if (!factura.cliente.trim()) return alert("Falta el cliente");
-    if (!factura.fecha) return alert("Falta la fecha");
-    if (items.length === 0) return alert("Agrega al menos un producto");
-
-    const ventaNueva = {
-      id: Date.now(),
-      cliente: factura.cliente.trim(),
-      fecha: factura.fecha,
-      metodoPago: factura.metodoPago,
-      estado: "Realizada", // o "Pendiente" si quieres
-      items: items.map((x) => ({ ...x })),
-      total: subtotal,
-    };
-
-    setVentas((prev) => [ventaNueva, ...prev]);
-
-    setShowModal(false);
-    setItems([]);
-    setEditingItem(null);
-  };
-
-  const eliminarVenta = (id) => {
-    if (confirm("¿Eliminar esta venta?")) {
-      setVentas((prev) => prev.filter((v) => v.id !== id));
+  const cargarVentas = async () => {
+    try {
+      const res = await axios.get(API_VENTAS);
+      setVentas(res.data);
+    } catch (err) {
+      console.error('Error cargando ventas:', err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const cargarProductos = async () => {
+    try {
+      const res = await axios.get(API_PRODUCTOS);
+      setProductos(res.data.data);
+    } catch (err) {
+      console.error('Error cargando productos:', err);
+    }
+  };
+
+  // ─── helpers ──────────────────────────────────────────────
+  const subtotal = useMemo(() => items.reduce((acc, it) => acc + it.cantidad * it.precio_venta, 0), [items]);
 
   const ventasFiltradas = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return ventas;
-
-    return ventas.filter((v) =>
-      [v.id, v.cliente, v.fecha, v.metodoPago, v.estado].some((x) =>
-        String(x).toLowerCase().includes(q),
-      ),
+    return ventas.filter(v =>
+      [v.id_venta, v.fecha_venta, v.metodo_pago, v.estado].some(x => String(x).toLowerCase().includes(q))
     );
   }, [ventas, search]);
 
+  const badgeEstado = estado => {
+    const map = {
+      Pagado: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      Pendiente: 'bg-amber-50   text-amber-700   border-amber-200',
+      Cancelado: 'bg-red-50     text-red-700     border-red-200'
+    };
+    return map[estado] ?? 'bg-slate-100 text-slate-600 border-slate-200';
+  };
+
+  const resetForm = () => {
+    setVentaForm(initialVenta);
+    setItemForm(initialItem);
+    setItems([]);
+    setEditingVenta(null);
+  };
+
+  // ─── items ────────────────────────────────────────────────
+  const agregarItem = e => {
+    e.preventDefault();
+    if (!itemForm.id_producto) return alert('Seleccione un producto');
+    if (itemForm.cantidad < 1) return alert('Cantidad inválida');
+
+    const prod = productos.find(p => Number(p.id) === Number(itemForm.id_producto));
+    if (!prod) return alert('Producto no válido');
+    if (prod.stock <= 0) return alert('Producto agotado');
+
+    const nuevo = {
+      id: Date.now(),
+      id_producto: prod.id,
+      descripcion: prod.descripcion,
+      cantidad: Number(itemForm.cantidad),
+      precio_venta: Number(prod.precio_venta),
+      subtotal: Number(prod.precio_venta) * Number(itemForm.cantidad)
+    };
+
+    setItems(prev => [nuevo, ...prev]);
+    setItemForm(initialItem);
+  };
+
+  const eliminarItem = id => {
+    setItems(prev => prev.filter(i => i.id !== id));
+  };
+
+  // ─── CRUD ventas ──────────────────────────────────────────
+  const handleGuardar = async () => {
+    if (items.length === 0) return alert('Agrega al menos un producto');
+    if (!ventaForm.fecha_venta) return alert('Falta la fecha');
+    if (!ventaForm.estado) return alert('Falta el estado');
+    if (!ventaForm.id_usuario) return alert('Falta el usuario');
+
+    const payload = {
+      id_usuario: Number(ventaForm.id_usuario),
+      fecha_venta: ventaForm.fecha_venta,
+      metodo_pago: ventaForm.metodo_pago, // 🔥 IMPORTANTE
+      estado: ventaForm.estado,
+      total: Number(subtotal),
+      detalles: items.map(i => ({
+        id_producto: i.id_producto,
+        cantidad: i.cantidad,
+        subtotal: i.subtotal
+      }))
+    };
+
+    console.log('PAYLOAD FINAL:', payload);
+
+    try {
+      if (editingVenta) {
+        await axios.put(`${API_VENTAS}/${editingVenta.id_venta}`, payload);
+      } else {
+        await axios.post(API_VENTAS, payload);
+      }
+
+      await cargarVentas();
+      resetForm();
+    } catch (err) {
+      console.error('Error guardando venta:', err);
+      alert('No se pudo guardar la venta');
+    }
+  };
+  const editarVenta = v => {
+    setEditingVenta(v);
+    setVentaForm({
+      id_usuario: v.id_usuario,
+      fecha_venta: v.fecha_venta?.split('T')[0] || '',
+      metodo_pago: v.metodo_pago,
+      estado: v.estado
+    });
+    setItems(
+      (v.detalles || []).map(d => ({
+        id: Date.now() + Math.random(),
+        id_producto: d.id_producto,
+        descripcion: d.producto?.descripcion || 'Sin producto',
+        cantidad: Number(d.cantidad),
+        precio_venta: Number(d.subtotal) / Number(d.cantidad),
+        subtotal: Number(d.subtotal)
+      }))
+    );
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const eliminarVenta = async id => {
+    if (!confirm('¿Eliminar esta venta?')) return;
+    try {
+      await axios.delete(`${API_VENTAS}/${id}`);
+      setVentas(prev => prev.filter(v => v.id_venta !== id));
+    } catch (err) {
+      console.error('Error eliminando venta:', err);
+      alert('No se pudo eliminar');
+    }
+  };
+
+  const cambiarEstadoVenta = async (id_venta, nuevoEstado) => {
+    try {
+      await axios.put(`${API_VENTAS}/${id_venta}`, { estado: nuevoEstado });
+      setVentas(prev => prev.map(v => (v.id_venta === id_venta ? { ...v, estado: nuevoEstado } : v)));
+    } catch {
+      alert('No se pudo cambiar el estado');
+    }
+  };
+
+  const exportarExcel = () => {
+    const data = ventasFiltradas.flatMap(v =>
+      (v.detalles || []).map(d => ({
+        ID_Venta: v.id_venta,
+        Fecha: v.fecha_venta?.split('T')[0] ?? '—',
+        Metodo_Pago: v.metodo_pago,
+        Estado: v.estado,
+        Total: v.total,
+        Producto: d.producto?.descripcion || 'Sin producto',
+        Cantidad: d.cantidad,
+        Subtotal: d.subtotal
+      }))
+    );
+    if (data.length === 0) return alert('No hay ventas para exportar');
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
+    XLSX.writeFile(wb, `ventas_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
+  // ─── render ───────────────────────────────────────────────
+  if (loading) {
+    return <div className="flex items-center justify-center py-20 text-slate-400 text-sm">Cargando ventas...</div>;
+  }
+
   return (
-    <div className="container">
-      <div className="header">
-        <div className="header-left">
-          <h1>Ventas</h1>
-        </div>
-      </div>
+    <div className="mx-auto">
+      {/* TÍTULO */}
+      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">Ventas</h1>
 
-      <div className="filtros-bar">
-        <div className="filtros-izq">
-          <input
-            className="filtro-input search-global"
-            placeholder="🔍 Buscar ventas..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      {/* ── FORMULARIO PRINCIPAL ─────────────────────────────── */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
+        <div className="flex justify-between items-center !mb-6">
+          <h2 className="text-2xl font-semibold text-slate-800">{editingVenta ? 'Editar venta' : 'Nueva venta'}</h2>
+          {editingVenta && (
+            <Button variant="cancel" onClick={resetForm}>
+              Cancelar edición
+            </Button>
+          )}
         </div>
 
-        <div className="filtros-der">
-          <button
-            className="btn-producto btn-nuevo"
-            type="button"
-            onClick={abrirCrearVenta}
+        {/* FECHA · MÉTODO · ESTADO */}
+        <div className="grid grid-cols-1 md:grid-cols-3 !gap-5 !mb-6">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Fecha de venta</label>
+            <input
+              type="date"
+              value={ventaForm.fecha_venta}
+              onChange={e => setVentaForm({ ...ventaForm, fecha_venta: e.target.value })}
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Método de pago</label>
+            <select
+              value={ventaForm.metodo_pago}
+              onChange={e => setVentaForm({ ...ventaForm, metodo_pago: e.target.value })}
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            >
+              <option value="Efectivo">Efectivo</option>
+              <option value="Nequi">Nequi</option>
+              <option value="Transferencia">Transferencia</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Estado</label>
+            <select
+              value={ventaForm.estado}
+              onChange={e => setVentaForm({ ...ventaForm, estado: e.target.value })}
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            >
+              <option value="Pagado">Pagado</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+
+        {/* FORM AGREGAR ÍTEM */}
+        <form onSubmit={agregarItem} className="grid grid-cols-1 md:grid-cols-4 !gap-3 !mb-6">
+          <select
+            value={itemForm.id_producto}
+            onChange={e => setItemForm({ ...itemForm, id_producto: e.target.value })}
+            className=" md:col-span-3  rounded-xl border border-slate-300 !px-4 !py-3"
           >
-           <MdAdd className="add-icon" />Crear venta
-          </button>
-        </div>
-      </div>
+            <option value="">Seleccionar producto</option>
+            {productos.map(p => (
+              <option key={p.id} value={p.id} disabled={p.stock <= 0}>
+                {p.descripcion}
+                {p.stock <= 0 ? ' (Agotado)' : ''}
+              </option>
+            ))}
+          </select>
 
-      {/* Tabla ventas */}
-      <div className="table-container">
-        <div className="table-header">
-          <h2>Ventas realizadas</h2>
+          <input
+            type="number"
+            min="1"
+            value={itemForm.cantidad}
+            onChange={e => setItemForm({ ...itemForm, cantidad: e.target.value })}
+            placeholder="Cantidad"
+            className="rounded-xl border border-slate-300 !px-4 !py-3   "
+          />
+          <div className="md:col-span-4 flex justify-end">
+            <Button type="submit" variant="primary" className="md:col-span-1  flex justify-center  ">
+              <MdAdd className="text-xl" /> Agregar ítem
+            </Button>
+          </div>
+        </form>
+        <div className="!my-4 border-t border-slate-200" />
+        {/* TOTAL + GUARDAR */}
+        <div className="flex justify-between items-center !mt-2">
+          <p className="text-sm text-slate-500">
+            Total estimado: <span className="font-semibold text-emerald-600">${subtotal.toLocaleString('es-CO')}</span>
+          </p>
+          <div className="flex !gap-3">
+            <Button variant="cancel" onClick={resetForm}>
+              Limpiar
+            </Button>
+            <Button variant="primary" onClick={handleGuardar}>
+              {editingVenta ? 'Actualizar venta' : 'Guardar venta'}
+            </Button>
+          </div>
         </div>
+      </section>
 
-        <div className="table-responsive">
-          <table className="productos-table">
+      {/* ── ÍTEMS DEL FORMULARIO ACTUAL ───────────────────────── */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
+        <h2 className="text-xl font-semibold text-slate-800 !mb-4">
+          Ítems de la venta
+          {items.length > 0 && (
+            <span className="!ml-2 text-sm font-normal text-slate-400">
+              ({items.length} ítem{items.length !== 1 ? 's' : ''})
+            </span>
+          )}
+        </h2>
+
+        <div className="overflow-x-auto rounded-2xl">
+          <table className="w-full text-sm">
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Fecha</th>
-                <th>Método</th>
-                <th>Total</th>
-                <th>Acciones</th>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {['Producto', 'Cantidad', 'Precio unit.', 'Subtotal', 'Acciones'].map(h => (
+                  <th
+                    key={h}
+                    className="!px-4 !py-3 text-left text-xs font-medium
+                      text-slate-500 uppercase tracking-wide"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-
-            <tbody>
-              {ventasFiltradas.map((v) => (
-                <tr key={v.id}>
-                  <td>
-                    <code>#{v.id}</code>
-                  </td>
-                  <td>{v.cliente}</td>
-                  <td>{v.fecha}</td>
-                  <td>{v.metodoPago}</td>
-                  <td>{v.total.toLocaleString("es-CO")}</td>
-                  <td className="acciones-cell">
-                    <button
-                      className="btn-accion eliminar"
-                      type="button"
-                      title="Eliminar"
-                      onClick={() => eliminarVenta(v.id)}
-                    >
-                      🗑️
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {ventasFiltradas.length === 0 && (
+            <tbody className="divide-y divide-slate-100">
+              {items.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: "1rem", opacity: 0.7 }}>
-                    No hay ventas.
+                  <td colSpan={5} className="text-center !py-8 text-slate-400 text-sm">
+                    Sin ítems agregados — usa el formulario de arriba
                   </td>
                 </tr>
+              ) : (
+                items.map(i => (
+                  <tr key={i.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="!px-4 !py-3 text-slate-800 font-medium">{i.descripcion}</td>
+                    <td className="!px-4 !py-3 text-slate-600">{i.cantidad}</td>
+                    <td className="!px-4 !py-3 text-slate-600">${i.precio_venta.toLocaleString('es-CO')}</td>
+                    <td className="!px-4 !py-3 text-slate-800 font-semibold">${i.subtotal.toLocaleString('es-CO')}</td>
+                    <td className="!px-4 !py-3">
+                      <Button variant="delete" onClick={() => eliminarItem(i.id)}>
+                        <MdDelete />
+                      </Button>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      {/* Modal factura */}
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) cerrarModal();
-          }}
-        >
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Nueva venta</h2>
-            <h4 className="subtitle"></h4>
+      {/* ── FILTROS ───────────────────────────────────────────── */}
+      <FilterBar
+        search={
+          <input
+            placeholder="Buscar por ID, fecha, método o estado..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full outline-none bg-transparent text-slate-700
+              text-sm placeholder-slate-400"
+          />
+        }
+      />
 
-            {/* Encabezado factura */}
-            <div className="form-row">
-              <div className="form-group">
-                <label>Cliente</label>
-                <input
-                  name="cliente"
-                  value={factura.cliente}
-                  onChange={onChangeFactura}
-                  placeholder="Nombre del cliente"
-                  required
-                />
-              </div>
+      {/* ── LISTA DE VENTAS ───────────────────────────────────── */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mt-6">
+        <div className="flex justify-between items-center !mb-4">
+          <h2 className="text-xl font-semibold text-slate-800">
+            Ventas registradas
+            <span className="!ml-2 text-sm font-normal text-slate-400">({ventasFiltradas.length})</span>
+          </h2>
+          <Button variant="primary" onClick={exportarExcel}>
+            Exportar Excel
+          </Button>
+        </div>
 
-              <div className="form-group">
-                <label>Fecha</label>
-                <input
-                  type="date"
-                  name="fecha"
-                  value={factura.fecha}
-                  onChange={onChangeFactura}
-                  required
-                />
-              </div>
-
-              <div className="form-group full-width">
-                <label>Método de pago</label>
-                <select
-                  name="metodoPago"
-                  value={factura.metodoPago}
-                  onChange={onChangeFactura}
-                >
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Nequi">Nequi</option>
-                </select>
-              </div>
-            </div>
-
-        
-            {/* Agregar producto a factura */}
-            <form onSubmit={agregarItem}>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Código</label>
-                  <select
-                    name="codigo"
-                    value={draft.codigo}
-                    onChange={onChangeDraft}
-                    required
+        <div className="overflow-x-auto rounded-2xl">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {['', '#', 'Fecha', 'Método pago', 'Estado', 'Total', 'Ítems', 'Acciones'].map(h => (
+                  <th
+                    key={h}
+                    className="!px-4 !py-3 text-left text-xs font-medium
+                      text-slate-500 uppercase tracking-wide whitespace-nowrap"
                   >
-                    {catalogo.map((p) => (
-                      <option key={p.codigo} value={p.codigo}>
-                        {p.codigo}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Descripción</label>
-                  <input
-                    name="descripcion"
-                    value={draft.descripcion}
-                    onChange={onChangeDraft}
-                    placeholder="Descripción del producto"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Cantidad</label>
-                  <input
-                    type="number"
-                    name="cantidad"
-                    min={1}
-                    value={draft.cantidad}
-                    onChange={onChangeDraft}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Precio unitario</label>
-                  <input
-                    type="number"
-                    name="precioUnitario"
-                    min={0}
-                    value={draft.precioUnitario}
-                    onChange={onChangeDraft}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-cancelar"
-                  onClick={cerrarModal}
-                >
-                  Cerrar
-                </button>
-
-                <button type="submit" className="btn-guardar">
-                  {editingItem ? "Guardar item" : "Agregar item"}
-                </button>
-              </div>
-            </form>
-
-            {/* Tabla items de factura */}
-            <div style={{ marginTop: 16 }}>
-              <div className="table-header">
-                <h2>Detalle de factura</h2>
-              </div>
-
-              <div className="table-responsive">
-                <table className="productos-table">
-                  <thead>
-                    <tr>
-                      <th>Código</th>
-                      <th>Descripción</th>
-                      <th>Cantidad</th>
-                      <th>Precio</th>
-                      <th>Subtotal</th>
-                      <th>Acción</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {items.map((it) => (
-                      <tr key={it.id}>
-                        <td>
-                          <code>#{it.codigo}</code>
-                        </td>
-                        <td>{it.descripcion}</td>
-                        <td>{it.cantidad}</td>
-                        <td>{it.precioUnitario.toLocaleString("es-CO")}</td>
-                        <td>
-                          {(it.cantidad * it.precioUnitario).toLocaleString(
-                            "es-CO",
-                          )}
-                        </td>
-                        <td className="acciones-cell">
-                          <button
-                            className="btn-accion editar"
-                            type="button"
-                            title="Editar"
-                            onClick={() => editarItem(it)}
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            className="btn-accion eliminar"
-                            type="button"
-                            title="Eliminar"
-                            onClick={() => eliminarItem(it.id)}
-                          >
-                            🗑️
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-
-                    {items.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={6}
-                          style={{ padding: "1rem", opacity: 0.7 }}
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ventasFiltradas.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center !py-8 text-slate-400 text-sm">
+                    No se encontraron ventas
+                  </td>
+                </tr>
+              ) : (
+                ventasFiltradas.map(v => (
+                  <>
+                    <tr key={v.id_venta} className="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                      {/* Expandir */}
+                      <td className="!px-3 !py-3">
+                        <button
+                          onClick={() => setExpandido(expandido === v.id_venta ? null : v.id_venta)}
+                          className="w-6 h-6 flex items-center justify-center rounded-md
+                            text-slate-400 hover:bg-slate-100 hover:text-slate-600
+                            transition-colors text-xs"
                         >
-                          Agrega productos para la factura.
+                          {expandido === v.id_venta ? '▲' : '▼'}
+                        </button>
+                      </td>
+
+                      <td className="!px-4 !py-3 font-mono text-xs text-slate-500">#{v.id_venta}</td>
+                      <td className="!px-4 !py-3 text-slate-600">{v.fecha_venta?.split('T')[0] ?? '—'}</td>
+                      <td className="!px-4 !py-3 text-slate-600">{v.metodo_pago}</td>
+
+                      {/* Cambio de estado rápido */}
+                      <td className="!px-4 !py-3">
+                        <select
+                          value={v.estado}
+                          onChange={e => cambiarEstadoVenta(v.id_venta, e.target.value)}
+                          className={`text-xs rounded-lg border !px-2 !py-1 font-medium
+                            cursor-pointer transition-colors ${badgeEstado(v.estado)}`}
+                        >
+                          <option value="Pagado">Pagado</option>
+                          <option value="Pendiente">Pendiente</option>
+                          <option value="Cancelado">Cancelado</option>
+                        </select>
+                      </td>
+
+                      <td className="!px-4 !py-3 text-slate-800 font-semibold">
+                        ${Number(v.total).toLocaleString('es-CO')}
+                      </td>
+                      <td className="!px-4 !py-3 text-slate-500 text-xs">{v.detalles?.length ?? 0} ítem(s)</td>
+
+                      <td className="!px-4 !py-3">
+                        <div className="flex gap-2">
+                          <Button variant="edit" onClick={() => editarVenta(v)}>
+                            <MdEdit />
+                          </Button>
+                          <Button variant="delete" onClick={() => eliminarVenta(v.id_venta)}>
+                            <MdDelete />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Fila expandible con ítems */}
+                    {expandido === v.id_venta && (
+                      <tr key={`${v.id_venta}-detalle`}>
+                        <td colSpan={8} className="!px-6 !py-3 bg-slate-50 border-b border-slate-100">
+                          {!v.detalles?.length ? (
+                            <p className="text-xs text-slate-400">Sin ítems registrados</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {v.detalles.map((d, idx) => (
+                                <span
+                                  key={d.id_detalle_venta ?? idx}
+                                  className="inline-flex items-center gap-1 !px-3 !py-1
+                                    bg-white border border-slate-200 rounded-lg
+                                    text-xs text-slate-600"
+                                >
+                                  <span className="font-medium text-slate-800">
+                                    {d.producto?.descripcion || 'Sin producto'}
+                                  </span>
+                                  <span className="text-slate-400">×</span>
+                                  <span>{d.cantidad}</span>
+                                  <span className="text-slate-400">·</span>
+                                  <span className="text-slate-500">${Number(d.subtotal).toLocaleString('es-CO')}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div
-                className="table-footer"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 12,
-                }}
-              >
-                <div style={{ fontSize: 18, fontWeight: 800 }}>
-                  Total: {subtotal.toLocaleString("es-CO")}
-                </div>
-                <button className="btn-ver" type="button" onClick={crearVenta}>
-                  Crear venta
-                </button>
-              </div>
-            </div>
-          </div>
+                  </>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </section>
     </div>
   );
 }

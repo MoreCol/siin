@@ -7,6 +7,8 @@ import { Rol } from '../entity/Rol';
 import { Proveedor } from '../entity/proveedores';
 import { Pedido } from '../entity/pedidos';
 import { DetallePedido } from '../entity/detallePedido';
+import { Venta } from '../entity/ventas';
+import { DetalleVenta } from '../entity/detalleVentas';
 
 dotenv.config();
 
@@ -18,7 +20,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   synchronize: false,
-  entities: [Product,Invent,Usuario,Rol, Proveedor, Pedido,DetallePedido]
+  entities: [Product,Invent,Usuario,Rol, Proveedor, Pedido,DetallePedido, Venta, DetalleVenta]
 });
 
 export const conexion= async() =>{

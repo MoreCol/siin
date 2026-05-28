@@ -1,8 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/inventario.css';
-import '../styles/productos.css';
+
 import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import { FilterBar } from '../components/ui/filterBar';
+import { Button } from '../components/ui/Button';
+import { FilterInvent } from '../components/ui/filterInvent';
 
 const API_URL = 'http://localhost:3000/api/inventario'; //url del servidor
 
@@ -13,10 +15,19 @@ export default function Inventario() {
   const [editingInvent, setEditingInvent] = useState(null); //
   const [loading, setLoading] = useState(true);
   const [productos, setProductos] = useState([]);
+  const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const [tipoFiltro, setTipoFiltro] = useState('');
+
+  const [usuarioFiltro, setUsuarioFiltro] = useState('');
+
+  const [fechaFiltro, setFechaFiltro] = useState('');
+
+  const [usuarios, setUsuarios] = useState([]);
 
   useEffect(() => {
     cargarInventarios();
     cargarProductos();
+    cargarUsuarios();
   }, []);
 
   const cargarInventarios = async () => {
@@ -29,6 +40,7 @@ export default function Inventario() {
         id_movimiento: i.id_movimiento,
         id_producto: i.id_producto,
         producto_descripcion: i.producto?.descripcion || 'Sin producto',
+        usuario_nombre: i.usuario ? `${i.usuario.nombre} ${i.usuario.apellido}` : 'Sin usuario',
         id_usuario: i.id_usuario,
         tipo_movimiento: i.tipo_movimiento,
         cantidad: Number(i.cantidad),
@@ -54,14 +66,29 @@ export default function Inventario() {
 
   const filteredInventarios = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return ListaInventarios;
 
-    return ListaInventarios.filter(i =>
-      [i.id_movimiento, i.producto_descripcion, i.tipo_movimiento, i.cantidad, i.descripcion].some(v =>
-        String(v).toLowerCase().includes(q)
-      )
-    );
-  }, [ListaInventarios, search]);
+    return ListaInventarios.filter(i => {
+      // búsqueda global
+      const coincideBusqueda =
+        !q ||
+        [i.producto_descripcion, i.usuario_nombre, i.tipo_movimiento, i.cantidad, i.descripcion].some(v =>
+          String(v).toLowerCase().includes(q)
+        );
+
+      // filtro movimiento
+      const coincideMovimiento = !tipoFiltro || i.tipo_movimiento === tipoFiltro;
+
+      // filtro usuario
+      const coincideUsuario = !usuarioFiltro || i.usuario_nombre.toLowerCase().includes(usuarioFiltro.toLowerCase());
+
+      // filtro fecha
+      const fechaMovimiento = new Date(i.fecha_movimiento).toISOString().split('T')[0];
+
+      const coincideFecha = !fechaFiltro || fechaMovimiento === fechaFiltro;
+
+      return coincideBusqueda && coincideMovimiento && coincideUsuario && coincideFecha;
+    });
+  }, [ListaInventarios, search, tipoFiltro, usuarioFiltro, fechaFiltro]);
 
   const editarInvent = invent => {
     setEditingInvent(invent);
@@ -87,7 +114,7 @@ export default function Inventario() {
 
     const inventData = {
       id_producto: Number(fd.get('id_producto')),
-      id_usuario: Number(fd.get('id_usuario')),
+      id_usuario: storedUser.id_usuario,
       tipo_movimiento: String(fd.get('tipo_movimiento')).trim(),
       cantidad: Number(fd.get('cantidad')),
       fecha_movimiento: fd.get('fecha_movimiento'),
@@ -111,8 +138,6 @@ export default function Inventario() {
         console.log(' Inventario actualizado');
       } else {
         await axios.post(API_URL, inventData);
-
-       
       }
 
       await cargarInventarios();
@@ -127,166 +152,296 @@ export default function Inventario() {
   };
 
   return (
-    <div className="container">
-      <div className="header">
-        <div className="header-left">
-          <h1 className="inventario-title">Inventario</h1>
-        </div>
-      </div>
+    <div className=" mx-auto ">
+      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">Inventario</h1>
 
-      <div className="filtros-bar">
-        <div className="filtros-izq">
+      {/* FORMULARIO */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
+        <div className="flex justify-between items-center !mb-6">
+          <div>
+            <h2 className="text-2xl font-semibold text-slate-800">
+              {editingInvent ? 'Editar movimiento' : 'Nuevo movimiento'}
+            </h2>
+
+            <p className="text-sm text-slate-500 !mt-1">Registro de entradas, salidas y ajustes de inventario</p>
+          </div>
+
+          {editingInvent && (
+            <Button variant="cancel" onClick={() => setEditingInvent(null)}>
+              Cancelar edición
+            </Button>
+          )}
+        </div>
+
+        {/* Usuario actual */}
+        <div className="bg-slate-100 border border-slate-200 rounded-2xl !px-4 !py-3 !mb-5">
+          <span className="text-sm text-slate-500">Movimiento realizado por:</span>
+
+          <span className="font-semibold text-slate-800 !ml-2">
+            {storedUser.nombre} {storedUser.apellido}
+          </span>
+        </div>
+
+        <form onSubmit={handleGuardar}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
+            {/* PRODUCTO */}
+            <select
+              name="id_producto"
+              defaultValue={editingInvent?.id_producto || ''}
+              required
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            >
+              <option value="">Seleccione un producto</option>
+
+              {productos.map(p => (
+                <option key={p.id} value={p.id}>
+                  {p.codigo_barras}
+                  {' - '}
+                  {p.descripcion}
+                </option>
+              ))}
+            </select>
+
+            {/* TIPO */}
+            <select
+              name="tipo_movimiento"
+              defaultValue={editingInvent?.tipo_movimiento ?? 'entrada'}
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            >
+              <option value="entrada">Entrada</option>
+
+              <option value="salida">Salida</option>
+
+              <option value="ajuste">Ajuste</option>
+            </select>
+
+            {/* CANTIDAD */}
+            <input
+              type="number"
+              name="cantidad"
+              placeholder="Cantidad"
+              min="1"
+              step="1"
+              defaultValue={editingInvent?.cantidad || ''}
+              required
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            {/* FECHA */}
+            <input
+              type="date"
+              name="fecha_movimiento"
+              defaultValue={
+                editingInvent?.fecha_movimiento
+                  ? new Date(editingInvent.fecha_movimiento).toISOString().split('T')[0]
+                  : ''
+              }
+              required
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            {/* DESCRIPCION */}
+            <input
+              type="text"
+              name="descripcion"
+              placeholder="Descripción"
+              defaultValue={editingInvent?.descripcion ?? ''}
+              required
+              className="md:col-span-2 rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 !mt-6">
+            <Button type="button" variant="cancel" onClick={() => setEditingInvent(null)}>
+              Limpiar
+            </Button>
+
+            <Button type="submit" variant="primary">
+              {editingInvent ? 'Actualizar movimiento' : 'Guardar movimiento'}
+            </Button>
+          </div>
+        </form>
+      </section>
+
+      {/* FILTROS */}
+      <FilterInvent
+        search={
           <input
-            className="filtro-input search-global"
-            placeholder="🔍 Buscar por código, nombre, tipo, fecha, usuario..."
+            placeholder="Buscar producto, usuario..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            className="w-full bg-transparent outline-none"
           />
-        </div>
-
-        <div className="filtros-der">
-          <button
-            className="btn-producto btn-nuevo"
-            onClick={() => {
-              setEditingInvent(null);
-              setShowModal(true);
-            }}
+        }
+        movimiento={
+          <select
+            value={tipoFiltro}
+            onChange={e => setTipoFiltro(e.target.value)}
+            className="w-full bg-transparent outline-none"
           >
-            <MdAdd className="add-icon" />
-            Agregar movimiento
-          </button>
-        </div>
-      </div>
+            <option value="">Todos los movimientos</option>
+            <option value="entrada">Entrada</option>
+            <option value="salida">Salida</option>
+            <option value="ajuste">Ajuste</option>
+          </select>
+        }
+        usuario={
+          <select
+            value={usuarioFiltro}
+            onChange={e => setUsuarioFiltro(e.target.value)}
+            className="w-full bg-transparent outline-none"
+          >
+            <option value="">Todos los usuarios</option>
 
-      <div className="table-container">
-        <div className="table-header">
-          <h2>Movimientos</h2>
-        </div>
-        <div className="table-responsive">
-          <table className="inventario-table">
+            {usuarios.map(user => (
+              <option key={user.id_usuario} value={user.nombre}>
+                {user.nombre}
+              </option>
+            ))}
+          </select>
+        }
+        fecha={
+          <input
+            type="date"
+            value={fechaFiltro}
+            onChange={e => setFechaFiltro(e.target.value)}
+            className="w-full bg-transparent outline-none"
+          />
+        }
+      />
+
+      {/* TABLA */}
+      <div className="mt-6">
+        <div
+          className="
+      overflow-x-auto
+      w-full
+      rounded-2xl
+      shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+      min-w-0
+      bg-white
+    "
+        >
+          <table
+            className="
+        w-full
+        min-w-[900px]
+        border-collapse
+        bg-white
+      "
+          >
             <thead>
               <tr>
-                <th>Producto</th>
-                <th>Usuario</th>
-                <th>Tipo de movimiento</th>
-                <th>Cantidad</th>
-                <th>Fecha de movimiento</th>
-                <th>Descripción</th>
-                <th>Acciones</th>
+                {['Producto', 'Usuario', 'Movimiento', 'Cantidad', 'Fecha', 'Descripción', 'Acciones'].map(col => (
+                  <th
+                    key={col}
+                    className="
+                bg-gradient-to-br
+                from-slate-50
+                to-slate-100
+                !px-4
+                !py-5
+                text-left
+                font-semibold
+                text-gray-700
+                text-[0.9rem]
+                uppercase
+                tracking-[0.5px]
+                border-b-2
+                border-slate-200
+              "
+                  >
+                    {col}
+                  </th>
+                ))}
               </tr>
             </thead>
 
             <tbody>
               {filteredInventarios.map(m => (
-                <tr key={m.id_movimiento}>
-                  <td>{m.producto_descripcion}</td>
-                  <td>{m.id_usuario}</td>
-                  <td>{m.tipo_movimiento}</td>
-                  <td>{m.cantidad}</td>
-                  <td>{new Date(m.fecha_movimiento).toLocaleDateString()}</td>
-                  <td>{m.descripcion}</td>
+                <tr
+                  key={m.id_movimiento}
+                  className="
+              border-b
+              border-slate-100
+              hover:bg-blue-50/40
+              transition-colors
+              duration-200
+            "
+                >
+                  {/* Producto */}
+                  <td className="!px-6 !py-5 text-slate-700">{m.producto_descripcion}</td>
 
-                  <td className="acciones-cell">
-                    <button className="btn-accion editar" onClick={() => editarInvent(m)} title="Editar">
-                      <MdEdit />
-                    </button>
-                    <button
-                      className="btn-accion eliminar"
-                      onClick={() => eliminarInvent(m.id_movimiento)}
-                      title="Eliminar"
+                  {/* Usuario */}
+                  <td className="!px-6 !py-5">
+                    <span
+                      className="
+                  inline-flex
+                  items-center
+                  rounded-full
+                  bg-slate-100
+                  !px-3
+                  !py-1
+                  text-sm
+                  font-medium
+                  text-slate-700
+                "
                     >
-                      <MdDelete />
-                    </button>
+                      {m.usuario_nombre}
+                    </span>
+                  </td>
+
+                  {/* Tipo movimiento */}
+                  <td className="!px-6 !py-5">
+                    <span
+                      className={`
+                  inline-flex
+                  items-center
+                  rounded-full
+                  !px-3
+                  !py-1
+                  text-sm
+                  font-semibold
+                  ${
+                    m.tipo_movimiento === 'entrada'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : m.tipo_movimiento === 'salida'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-sky-100 text-sky-700'
+                  }
+                `}
+                    >
+                      {m.tipo_movimiento}
+                    </span>
+                  </td>
+
+                  {/* Cantidad */}
+                  <td className="!px-6 !py-5 font-semibold text-slate-800">{m.cantidad}</td>
+
+                  {/* Fecha */}
+                  <td className="!px-6 !py-5 text-slate-600">{new Date(m.fecha_movimiento).toLocaleDateString()}</td>
+
+                  {/* Descripción */}
+                  <td className="!px-6 !py-5 text-slate-600">{m.descripcion}</td>
+
+                  {/* Acciones */}
+                  <td className="!px-6 !py-5">
+                    <div className="flex gap-2">
+                      <Button variant="edit" onClick={() => editarInvent(m)}>
+                        <MdEdit />
+                      </Button>
+
+                      <Button variant="delete" onClick={() => eliminarInvent(m.id_movimiento)}>
+                        <MdDelete />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div className="table-footer">
-          <button className="btn-ver">Ver mas</button>
-        </div>
       </div>
-
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={e => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <div className="modal-content">
-            <h2>{editingInvent ? 'Editar' : 'Nuevo'} movimiento</h2>
-            <h4 className="subtitle">Formulario de movimiento</h4>
-
-            <form onSubmit={handleGuardar}>
-              <select name="id_producto" defaultValue={editingInvent?.id_producto || ''} required>
-                
-                
-                <option  value="">Seleccione un producto</option>
-
-                
-                {productos.map(p => (
-                  
-                  <option className='selected'     key={p.id} value={p.id}>
-                    {p.codigo_barras} - {p.descripcion}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                type="number"
-                name="id_usuario"
-                placeholder="usuario"
-                defaultValue={editingInvent?.id_usuario || '1'}
-                required
-              />
-              <select name="tipo_movimiento" defaultValue={editingInvent?.tipo_movimiento ?? 'Entrada'}>
-                <div className='selected'>
-                <option value="entrada">Entrada</option>
-                <option value="salida">Salida</option>
-                <option value="ajuste">Ajuste</option></div>
-              </select>
-
-              <input
-                type="number"
-                name="cantidad"
-                placeholder="Cantidad"
-                min="1"
-                step="1"
-                defaultValue={editingInvent?.cantidad || ''}
-                required
-              />
-              <input
-                type="date"
-                name="fecha_movimiento"
-                defaultValue={
-                  editingInvent?.fecha_movimiento
-                    ? new Date(editingInvent.fecha_movimiento).toISOString().split('T')[0]
-                    : ''
-                }
-                required
-              />
-              <input
-                type="text"
-                name="descripcion"
-                placeholder="Descripción"
-                defaultValue={editingInvent?.descripcion ?? ''}
-                required
-              />
-
-              <div className="modal-actions">
-                <button type="button" className="btn-cancelar" onClick={() => setShowModal(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-guardar">
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

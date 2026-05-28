@@ -1,265 +1,264 @@
 import { useMemo, useState, useEffect } from 'react';
 import axios from 'axios';
-import '../styles/usuarios.css';
-import '../styles/shared.css';
-import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import { MdEdit, MdDelete } from 'react-icons/md';
+import { Button } from '../components/ui/Button';
+import { FilterBar } from '../components/ui/filterBar';
 
 const API_URL = 'http://localhost:3000/api/usuarios';
 
 export default function Usuarios() {
-  const [listaUsuarios, setListaUsuarios] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
+  const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [form, setForm] = useState({
+    nombre: '',
+    apellido: '',
+    correo: '',
+    password: '',
+    id_rol: 1,
+    estado: 'Activo'
+  });
 
   useEffect(() => {
     cargarUsuarios();
   }, []);
 
   const cargarUsuarios = async () => {
-    console.log('cargando usuarios');
+    setLoading(true);
     try {
       const res = await axios.get(API_URL);
-      console.log('si', res.data);
 
-      const usuariosFormateados = res.data.map(u => ({
+      const data = res.data.map(u => ({
         id_usuario: u.id_usuario,
         nombre: u.nombre,
         apellido: u.apellido,
         correo: u.correo,
         password: u.password,
         id_rol: u.id_rol,
-        estado: u.estado
+        estado: u.estado ? 'Activo' : 'Inactivo'
       }));
 
-      setListaUsuarios(usuariosFormateados);
-    } catch (error) {
-      console.log('error al cargar usuarios', error);
+      setUsuarios(data);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredUsuarios = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return listaUsuarios;
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return usuarios;
 
-    return listaUsuarios.filter(u =>
-      [u.id_usuario, u.nombre, u.apellido, u.correo, u.password, u.id_rol, u.estado].some(v =>
-        String(v).toLowerCase().includes(q)
-      )
+    return usuarios.filter(u =>
+      [u.nombre, u.apellido, u.correo, u.estado]
+        .some(v => String(v).toLowerCase().includes(q))
     );
-  }, [listaUsuarios, search]);
+  }, [usuarios, search]);
 
-  const editarUsuario = usuario => {
-    setEditingUser(usuario);
-    setShowModal(true);
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const eliminarUsuario = async id_usuario => {
-    if (!confirm('¿Eliminar este usuario?')) return;
-
-    try {
-      await axios.delete(`${API_URL}/${id_usuario}`);
-      res.status(200).json({ message: 'Producto eliminado' });
-
-      setListaUsuarios(prev => prev.filter(u => u.id_usuario !== id_usuario));
-    } catch (error) {
-      await cargarUsuarios();
-    }
+  const editar = u => {
+    setEditing(u);
+    setForm({
+      nombre: u.nombre,
+      apellido: u.apellido,
+      correo: u.correo,
+      password: u.password,
+      id_rol: u.id_rol,
+      estado: u.estado
+    });
   };
 
-  const handleGuardar = async e => {
+  const limpiar = () => {
+    setEditing(null);
+    setForm({
+      nombre: '',
+      apellido: '',
+      correo: '',
+      password: '',
+      id_rol: 1,
+      estado: 'Activo'
+    });
+  };
+
+  const guardar = async e => {
     e.preventDefault();
-    const fd = new FormData(e.target);
-    console.log('formData');
 
-    const newData = {
-      nombre: String(fd.get('nombre')).trim(),
-      apellido: String(fd.get('apellido')).trim(),
-      correo: String(fd.get('correo')).trim(),
-      password: String(fd.get('password')).trim(),
-      id_rol: Number(fd.get('id_rol')),
-      estado: fd.get('estado')
+    const payload = {
+      nombre: form.nombre,
+      apellido: form.apellido,
+      correo: form.correo,
+      password: form.password,
+      id_rol: Number(form.id_rol),
+      estado: form.estado === 'Activo'
     };
 
-    console.log('informacion leida');
-    try {
-      if (editingUser) {
-        await axios.put(`${API_URL}/${editingUser.id_usuario}`, newData);
-        console.log('producto actualizado');
-      } else {
-        await axios.post(API_URL, newData);
-      }
-
-      await cargarUsuarios();
-
-      setEditingUser(null);
-      setShowModal(false);
-      e.target.reset();
-    } catch (error) {
-      console.error('Error al guardar', error);
+    if (editing) {
+      await axios.put(`${API_URL}/${editing.id_usuario}`, payload);
+    } else {
+      await axios.post(API_URL, payload);
     }
+
+    await cargarUsuarios();
+    limpiar();
   };
 
+  const eliminar = async id => {
+    if (!confirm('¿Eliminar usuario?')) return;
+
+    await axios.delete(`${API_URL}/${id}`);
+    setUsuarios(prev => prev.filter(u => u.id_usuario !== id));
+  };
+
+  if (loading) {
+    return <div className="text-center py-20 text-slate-400">Cargando usuarios...</div>;
+  }
+
   return (
-    <div className="container">
-      <div className="header">
-        <div className="header-left">
-          <h1 className="usuarios-title">
-            Usuarios <span></span>
-          </h1>
-        </div>
-      </div>
+    <div className="mx-auto">
 
-      <div className="filtros-bar">
-        <div className="filtros-izq">
-          <input
-            className="filtro-input"
-            placeholder="🔍 Buscar por nombre, apellido, correo, rol, estado..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="filtros-der">
-          <button
-            className="btn-producto btn-nuevo"
-            onClick={() => {
-              setEditingUser(null);
-              setShowModal(true);
-            }}
-          >
-            <MdAdd className="add-icon" /> Agregar usuario
-          </button>
-        </div>
-      </div>
+      {/* HEADER */}
+      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">
+        Usuarios
+      </h1>
 
-      <div className="table-container">
-        <div className="table-header">
-          <h2>Lista de usuarios</h2>
+      {/* FORM */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
+
+        <div className="flex justify-between items-center !mb-6">
+          <h2 className="text-2xl font-semibold text-slate-800">
+            {editing ? 'Editar usuario' : 'Nuevo usuario'}
+          </h2>
+
+          {editing && (
+            <Button variant="cancel" type="button" onClick={limpiar}>
+              Cancelar edición
+            </Button>
+          )}
         </div>
 
-        <div className="table-responsive">
-          <table className="usuarios-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Correo</th>
-                <th>Contraseña</th>
+        <form onSubmit={guardar}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
 
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsuarios.map(u => (
-                <tr key={u.id_usuario}>
-                  <td>{u.nombre}</td>
-                  <td>{u.apellido}</td>
-                  <td>{u.correo}</td>
+            <input name="nombre" value={form.nombre} onChange={handleChange}
+              placeholder="Nombre"
+              className="rounded-xl border border-slate-300 !px-4 !py-3" />
 
-                  <td>{u.id_rol === 1 ? 'Admin' : u.id_rol === 2 ? 'Cajero' : 'Responsable Inventario'}</td>
-                  <td>{u.estado ? 'Activo' : 'Inactivo'}</td>
-                  <td className="acciones-cell">
-                    <button className="btn-accion editar" onClick={() => editarUsuario(u)} title="Editar">
-                      <MdEdit />
-                    </button>
-                    <button
-                      className="btn-accion eliminar"
-                      onClick={() => eliminarUsuario(u.id_usuario)}
-                      title="Eliminar"
-                    >
-                      <MdDelete />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            <input name="apellido" value={form.apellido} onChange={handleChange}
+              placeholder="Apellido"
+              className="rounded-xl border border-slate-300 !px-4 !py-3" />
 
-        <div className="table-footer">
-          <button className="btn-ver" type="button">
-            Ver usuarios
-          </button>
-        </div>
-      </div>
+            <input name="correo" value={form.correo} onChange={handleChange}
+              placeholder="Correo"
+              className="rounded-xl border border-slate-300 !px-4 !py-3" />
 
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={e => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <div className="modal-content">
-            <h2>{editingUser ? 'Editar' : 'Agregar'} usuario</h2>
+            <input name="password" value={form.password} onChange={handleChange}
+              placeholder="Contraseña"
+              type="password"
+              className="rounded-xl border border-slate-300 !px-4 !py-3" />
 
-            <form onSubmit={handleGuardar}>
-              <input
-                className="usuarios-modal-input"
-                name="nombre"
-                placeholder="Nombre"
-                defaultValue={editingUser?.nombre}
-                required
-              />
-              <input
-                className="usuarios-modal-input"
-                name="apellido"
-                placeholder="Apellido"
-                defaultValue={editingUser?.apellido}
-                required
-              />
-              <input
-                className="usuarios-modal-input"
-                name="correo"
-                placeholder="Correo"
-                defaultValue={editingUser?.correo}
-                type="email"
-                required
-              />
-              <input
-                className="usuarios-modal-input"
-                name="password"
-                placeholder="Contraseña"
-                defaultValue={editingUser?.password}
-                type="password"
-              />
+            <select name="id_rol" value={form.id_rol} onChange={handleChange}
+              className="rounded-xl border border-slate-300 !px-4 !py-3">
+              <option value={1}>Admin</option>
+              <option value={2}>Cajero</option>
+              <option value={3}>Inventario</option>
+            </select>
 
-              <select className="usuarios-modal-input" name="id_rol" defaultValue={editingUser?.id_rol ?? 1} required>
-                <div className="selected ">
-                  <option value="1">Admin</option>
-                  <option value="2">Cajero</option>
-                  <option value="3">Responsable Inventario</option>
-                </div>
-              </select>
+            <select name="estado" value={form.estado} onChange={handleChange}
+              className="rounded-xl border border-slate-300 !px-4 !py-3">
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
 
-              <select
-                className="usuarios-modal-input"
-                name="estado"
-                defaultValue={editingUser?.estado ? 1 : 0}
-                required
-              >
-                <div className="selected">
-                  <option value="1">Activo</option>
-                  <option value="0">Inactivo</option>
-                </div>
-              </select>
-
-              <div className="usuarios-modal-actions">
-                <button type="button" className="btn-cancelar" onClick={() => setShowModal(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-guardar">
-                  Guardar
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
+
+          <div className="flex justify-end !gap-3 !mt-6">
+            <Button type="button" variant="cancel" onClick={limpiar}>
+              Limpiar
+            </Button>
+
+            <Button type="submit" variant="primary">
+              Guardar
+            </Button>
+          </div>
+        </form>
+      </section>
+
+      {/* TABLE */}
+      <div className="overflow-x-auto
+      w-full
+      rounded-2xl
+      shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+      min-w-0
+      bg-white">
+
+        <table className="w-full
+        min-w-[900px]
+        border-collapse
+        overflow-hidden
+        rounded-2xl
+        bg-white">
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr>
+              {['Nombre', 'Apellido', 'Correo', 'Rol', 'Estado', 'Acciones']
+                .map(h => (
+                  <th key={h} className="  bg-gradient-to-br
+                from-slate-50
+                to-slate-100
+                !px-4
+                !py-5
+                text-left
+                text-[0.9rem]
+                font-semibold
+                uppercase
+                tracking-[0.5px]
+                text-gray-700
+                border-b-2
+                border-slate-200">
+                    {h}
+                  </th>
+                ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {filtered.map(u => (
+              <tr key={u.id_usuario} className=" hover:bg-blue-500/5
+              transition-colors">
+
+                <td className="!px-4 !py-3 border-b border-slate-100 align-middle">{u.nombre}</td>
+                <td className="!px-4 !py-5 border-b border-slate-100 align-middle">{u.apellido}</td>
+                <td className="!px-4 !py-5 border-b border-slate-100 align-middle">{u.correo}</td>
+                <td className="!px-4 !py-5 border-b border-slate-100 align-middle">{u.id_rol}</td>
+
+                <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                  <span className={`px-2 py-1 rounded-full text-xs
+                    ${u.estado === 'Activo'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-slate-100 text-slate-500'}`}>
+                    {u.estado}
+                  </span>
+                </td>
+
+                <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                  <Button variant="edit" onClick={() => editar(u)}>
+                    <MdEdit />
+                  </Button>
+
+                  <Button variant="delete" onClick={() => eliminar(u.id_usuario)}>
+                    <MdDelete />
+                  </Button>
+                </td>
+
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+      </div>
     </div>
   );
 }

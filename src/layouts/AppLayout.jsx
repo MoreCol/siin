@@ -11,7 +11,8 @@ import {
   MdPeople,
   MdPerson,
   MdLocalShipping,
-  MdExitToApp
+  MdExitToApp,
+  MdConfirmationNumber
 } from 'react-icons/md';
 
 export function AppLayout() {
@@ -33,69 +34,99 @@ export function AppLayout() {
   };
 
   return (
-    <div className="layout-wrapper">
-      <header className="navbar-top">
-        <div className="navbar-left">
-          <span className="navbar-app-name">Miscelanea </span>
-          <span className="navbar-app-name"> Moreno</span>
+    <div className="flex flex-col min-h-screen bg-slate-50 ">
+      <header className=" !p-6 items-center justify-between  border-b border-slate-200  flex  w-full h-14  fixed  p-6  bg-linear-to-r bg-white ">
+        <div className="flex flex-col">
+          <label className=" text-slate-900 font-medium text-2xl ">Miscelanea Moreno</label>
+          <label className="text-[14px]  text-slate-400">Sistema de Inventario</label>
         </div>
 
-        <div className="navbar-center">
-          
-        </div>
-
-        <div className="navbar-right">
-          <button className="user-btn" type="button">
-            <MdPerson className="nav-icon" />
-         <span>
-          {user ? `${user.nombre} ${user.apellido}` : 'Usuario'}
-        </span>
-          </button>
+        <div className="flex items-center gap-2">
+          <div>
+            <div
+              className="w-11 h-11  rounded-full bg-slate-900
+            flex items-center justify-center text-white text-[12px]"
+            >
+              {user ? `${user.nombre[0]}${user.apellido[0]}` : 'US'}
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="layout-body">
-        <aside className="sidebar-left">
-          <nav className="sidebar-nav">
+      <div className="flex flex-1  ">
+        <aside className="  fixed
+      top-14
+      left-0
+      w-full
+      h-[72px]
+      bg-white
+      border-b
+      border-slate-300
+      z-40
+      flex
+      items-center
+      justify-between
+      px-4 ">
+          <nav className="  flex
+        items-center
+        gap-1
+        overflow-x-auto
+        whitespace-nowrap ">
             <Link to="/dashboard" className="sidebar-link">
               <MdDashboard />
-              <span>Dashboard</span>
+              <label>Dashboard</label>
             </Link>
 
             <Link to="/productos" className="sidebar-link">
               <MdShoppingCart />
-              <span>Productos</span>
+              <label>Productos</label>
             </Link>
 
             <Link to="/inventarios" className="sidebar-link">
               <MdInventory2 />
-              <span>Inventario</span>
+              <label>Inventario</label>
             </Link>
 
             <Link to="/pedidos" className="sidebar-link">
-              <span>🛒</span>
-              <span>Pedidos</span>
+              <MdConfirmationNumber />
+              <label>Pedidos</label>
             </Link>
 
             <Link to="/ventas" className="sidebar-link">
               <MdSell />
-              <span>Ventas</span>
+              <label>Ventas</label>
             </Link>
 
             <Link to="/proveedores" className="sidebar-link">
               <MdLocalShipping />
-              <span>Proveedores</span>
+              <label>Proveedores</label>
             </Link>
 
             <Link to="/usuarios" className="sidebar-link">
               <MdPeople />
-              <span>Usuarios</span>
+              <label>Usuarios</label>
             </Link>
           </nav>
 
-          <button className="sidebar-logout" onClick={handleLogout} type="button">
+          <button
+            onClick={handleLogout}
+            type="button"
+            className="flex
+        items-center
+        gap-2
+        !px-4
+        !py-3
+        text-slate-400
+        font-medium
+        rounded-xl
+        hover:text-red-500
+        hover:bg-red-50
+        transition-colors
+        duration-150
+        shrink-0"
+          >
             <MdExitToApp />
-            <span>Cerrar Sesion</span>
+            <label>Salir</label>
           </button>
         </aside>
 

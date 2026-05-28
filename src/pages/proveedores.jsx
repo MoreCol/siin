@@ -1,18 +1,24 @@
 import { useMemo, useState, useEffect } from 'react';
 import { MdAdd, MdEdit, MdDelete } from 'react-icons/md';
 import axios from 'axios';
-
-import '../styles/shared.css';
-import '../styles/proveedores.css';
+import { Button } from '../components/ui/Button';
+import { FilterBar } from '../components/ui/filterBar';
 
 const API_URL = 'http://localhost:3000/api/proveedores';
 
 export default function Proveedores() {
   const [proveedores, setProveedores] = useState([]);
   const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [form, setForm] = useState({
+    nit: '',
+    nombre: '',
+    telefono: '',
+    email: '',
+    direccion: ''
+  });
 
   useEffect(() => {
     cargarProveedores();
@@ -23,19 +29,16 @@ export default function Proveedores() {
     try {
       const res = await axios.get(API_URL);
 
-      const ProveedoresFormateados = res.data.map(p => ({
+      const formateados = res.data.map(p => ({
         id_proveedor: p.id_proveedor,
         nit: p.nit || '',
         nombre: p.nombre || '',
         telefono: p.telefono || '',
-
         email: p.correo || '',
-        direccion: p.direccion || '',
-        estado: p.estado ? 'Activo' : 'Inactivo'
+        direccion: p.direccion || ''
       }));
-      setProveedores(ProveedoresFormateados);
-    } catch (error) {
-      console.error('Error cargando proveedores:', error);
+
+      setProveedores(formateados);
     } finally {
       setLoading(false);
     }
@@ -44,208 +47,225 @@ export default function Proveedores() {
   const filteredProv = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return proveedores;
+
     return proveedores.filter(p =>
-      [p.nit, p.nombre, p.telefono, p.email, p.estado].some(v => String(v).toLowerCase().includes(q))
+      [p.nit, p.nombre, p.telefono, p.email].some(v => String(v).toLowerCase().includes(q))
     );
   }, [proveedores, search]);
 
-  const editarUsuario = () => {
-    setEditing(null);
-    setShowModal(true);
+  const editarProveedor = p => {
+    setEditing(p);
+    setForm({
+      nit: p.nit,
+      nombre: p.nombre,
+      telefono: p.telefono,
+      email: p.email,
+      direccion: p.direccion
+    });
   };
 
-  const eliminarProveedor = async id_proveedor => {
-    if (!confirm('¿Eliminar este proveedor?')) return;
+  const limpiar = () => {
+    setEditing(null);
+    setForm({
+      nit: '',
+      nombre: '',
+      telefono: '',
+      email: '',
+      direccion: ''
+    });
+  };
 
-    try {
-      await axios.delete(`${API_URL}/${id_proveedor}`);
-
-      setProveedores(prev => prev.filter(u => u.id_usuario !== id_usuario));
-    } catch (error) {
-      await cargarProveedores();
-    }
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleGuardar = async e => {
     e.preventDefault();
-    const fd = new FormData(e.target);
 
-    const Proovdata = {
-      nit: Number(fd.get('nit')),
-      nombre: String(fd.get('nombre')).trim(),
-      telefono: Number(fd.get('telefono')),
-      correo: String(fd.get('email')).trim(),
-      direccion: String(fd.get('direccion')).trim(),
-      estado: String(fd.get('estado')).trim() === 'Activo'
+    const payload = {
+      nit: Number(form.nit),
+      nombre: form.nombre,
+      telefono: Number(form.telefono),
+      correo: form.email,
+      direccion: form.direccion
     };
 
-    try {
-      if (editing) {
-        await axios.put(`${API_URL}/${editing.id_proveedor}`, Proovdata);
-      } else {
-        await axios.post(API_URL, Proovdata);
-      }
-      await cargarProveedores();
-
-      setShowModal(false);
-      setEditing(null);
-      e.target.reset();
-      await cargarProveedores();
-    } catch (error) {
-      console.error('Error al guardar proveedor', error);
+    if (editing) {
+      await axios.put(`${API_URL}/${editing.id_proveedor}`, payload);
+    } else {
+      await axios.post(API_URL, payload);
     }
+
+    await cargarProveedores();
+    limpiar();
   };
 
-  return (
-    <div className="container">
-      <div className="header">
-        <div className="header-left">
-          <h1 className="proveedores-title">Proveedores</h1>
-        </div>
-      </div>
+  const eliminarProveedor = async id => {
+    if (!confirm('¿Eliminar proveedor?')) return;
 
-      <div className="filtros-bar">
-        <div className="filtros-izq">
+    await axios.delete(`${API_URL}/${id}`);
+    setProveedores(prev => prev.filter(p => p.id_proveedor !== id));
+  };
+
+  if (loading) {
+    return <div className="flex justify-center py-20 text-slate-400">Cargando proveedores...</div>;
+  }
+
+  return (
+    <div className="mx-auto">
+      {/* HEADER */}
+      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">Proveedores</h1>
+
+      {/* FORM (SIN MODAL) */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
+        <div className="flex justify-between items-center !mb-6">
+          <h2 className="text-2xl font-semibold text-slate-800">{editing ? 'Editar proveedor' : 'Nuevo proveedor'}</h2>
+
+          {editing && <Button onClick={() => setEditing(null)}>Cancelar edición</Button>}
+        </div>
+
+        <form onSubmit={handleGuardar}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
+            <input
+              name="nit"
+              value={form.nit}
+              onChange={handleChange}
+              placeholder="NIT"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <input
+              name="nombre"
+              value={form.nombre}
+              onChange={handleChange}
+              placeholder="Nombre"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <input
+              name="telefono"
+              value={form.telefono}
+              onChange={handleChange}
+              placeholder="Teléfono"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <input
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Email"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+
+            <input
+              name="direccion"
+              value={form.direccion}
+              onChange={handleChange}
+              placeholder="Dirección"
+              className="rounded-xl border border-slate-300 !px-4 !py-3"
+            />
+          </div>
+
+          <div className="flex justify-end !gap-3 !mt-6">
+            <Button variant="cancel" type="button" onClick={limpiar}>
+              Limpiar
+            </Button>
+
+            <Button type="submit" variant="primary">
+              Guardar
+            </Button>
+          </div>
+        </form>
+      </section>
+
+      {/* FILTER */}
+      <FilterBar
+        search={
           <input
-            className="filtro-input"
-            placeholder=" Buscar por NIT, nombre, teléfono, email..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar proveedores..."
+            className="w-full bg-transparent outline-none"
           />
-        </div>
-        <div className="filtros-der">
-          <button
-            className="btn-producto btn-nuevo"
-            onClick={() => {
-              setEditing(null);
-              setShowModal(true);
-            }}
+        }
+      />
+
+      {/* TABLE */}
+      <div className="mt-6">
+        <div
+          className=" overflow-x-auto
+      w-full
+      rounded-2xl
+      shadow-[0_4px_20px_rgba(0,0,0,0.08)]
+      min-w-0
+      bg-white"
+        >
+          <table
+            className=" w-full
+        min-w-[900px]
+        border-collapse
+        overflow-hidden
+        rounded-2xl
+        bg-white"
           >
-            <MdAdd className="add-icon" /> Agregar Proveedor
-          </button>
-        </div>
-      </div>
-
-      <div className="table-container">
-        <div className="table-header">
-          <h2>Lista de proveedores</h2>
-        </div>
-
-        <div className="table-responsive">
-          <table className="proveedores-table">
             <thead>
-              <tr>
-                <th>NIT</th>
-                <th>Nombre</th>
-                <th>Teléfono</th>
-                <th>Email</th>
-                <th>Dirección</th>
-                <th>Estado</th>
-                <th>Acciones</th>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {['Nit', 'Nombre', 'Teléfono', 'Email', 'Direccion', 'Acciones'].map(header => (
+                  <th
+                    key={header}
+                    className="
+                bg-gradient-to-br
+                from-slate-50
+                to-slate-100
+                !px-4
+                !py-5
+                text-left
+                text-[0.9rem]
+                font-semibold
+                uppercase
+                tracking-[0.5px]
+                text-gray-700
+                border-b-2
+                border-slate-200
+              "
+                  >
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
+
             <tbody>
               {filteredProv.map(p => (
-                <tr key={p.id_proveedor}>
-                  <td>{p.nit}</td>
-                  <td>{p.nombre}</td>
-                  <td>{p.telefono}</td>
-                  <td>{p.email}</td>
-                  <td>{p.direccion}</td>
-                  <td>{p.estado}</td>
-                  <td className="acciones-cell">
-                    <button className="btn-accion editar" onClick={() => editarUsuario(p)} title="Editar">
-                      <MdEdit />
-                    </button>
-                    <button
-                      className="btn-accion eliminar"
-                      onClick={() => eliminarProveedor(p.id_proveedor)}
-                      title="Eliminar"
-                    >
-                      <MdDelete />
-                    </button>
+                <tr
+                  key={p.id_proveedor}
+                  className="  hover:bg-blue-500/5
+              transition-colors"
+                >
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.nit}</td>
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.nombre}</td>
+
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.telefono}</td>
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.email}</td>
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.direccion}</td>
+
+                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                    <div className="flex items-center !gap-3">
+                      <Button variant="edit" onClick={() => editarProveedor(p)}>
+                        <MdEdit />
+                      </Button>
+                      <Button variant="delete" onClick={() => eliminarProveedor(p.id_proveedor)}>
+                        <MdDelete />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        <div className="table-footer">
-          <button className="btn-ver" type="button">
-            Ver proveedores
-          </button>
-        </div>
       </div>
-
-      {showModal && (
-        <div
-          className="modal-overlay"
-          onClick={e => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-        >
-          <div className="modal-content">
-            <h2>{editing ? 'Editar' : 'Nuevo'} proveedor</h2>
-
-            <form onSubmit={handleGuardar}>
-              <input
-                name="nit"
-                className="proveedores-modal-input"
-                placeholder="NIT (número)"
-                type="number"
-                defaultValue={editing?.nit}
-                required
-              />
-              <input
-                name="nombre"
-                className="proveedores-modal-input"
-                placeholder="Nombre del proveedor"
-                defaultValue={editing?.nombre}
-                required
-              />
-              <input
-                name="telefono"
-                className="proveedores-modal-input"
-                placeholder="Teléfono"
-                defaultValue={editing?.telefono}
-                required
-              />
-              <input
-                name="email"
-                type="email"
-                className="proveedores-modal-input"
-                placeholder="Email"
-                defaultValue={editing?.email}
-                required
-              />
-              <input
-                name="direccion"
-                className="proveedores-modal-input"
-                placeholder="Dirección"
-                defaultValue={editing?.direccion}
-                required
-              />
-
-              <select name="estado" className="proveedores-modal-input" defaultValue={editing?.estado ?? 'Activo'}>
-                <div className="selected">
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                </div>
-              </select>
-
-              <div className="proveedores-modal-actions">
-                <button type="button" className="btn-cancelar" onClick={() => setShowModal(false)}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-guardar">
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

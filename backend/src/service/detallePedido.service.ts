@@ -16,7 +16,7 @@ export class DetallePedidosService {
       where: { id_detalle_pedido: id },
       relations: ['producto', 'proveedor', 'pedido'],
     });
-  }
+  } 
 
   async create(data: Partial<DetallePedido>) {
     const detalle = this.repo.create(data);

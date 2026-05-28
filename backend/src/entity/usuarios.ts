@@ -1,6 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BeforeInsert, BeforeUpdate,OneToMany} from 'typeorm';
 import { Rol } from '../entity/Rol';
 import bcrypt from 'bcryptjs';
+import { Invent } from './inventario';
+import { Venta } from './ventas';
 
 @Entity('usuarios')
 export class Usuario {
@@ -28,6 +30,14 @@ export class Usuario {
   @ManyToOne(() => Rol, rol => rol.usuarios)
   @JoinColumn({ name: 'id_rol' })
   rol!: Rol;
+  @OneToMany(
+  () => Invent,
+  inventario => inventario.usuario
+)
+  inventarios!: Invent[];
+
+   @OneToMany(() => Venta, (venta) => venta.usuario)
+   ventas: Venta[] | undefined;
 
   @BeforeInsert() // antes de guardar usuario
   @BeforeUpdate() //antes de actualizar user
