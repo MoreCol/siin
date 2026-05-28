@@ -19,7 +19,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   synchronize: false,
-  ssl: { rejectUnauthorized: false },
+  ssl: process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
   entities: [Product, Invent, Usuario, Rol, Proveedor, Pedido, DetallePedido, Venta, DetalleVenta]
 });
 export const conexion= async() =>{
