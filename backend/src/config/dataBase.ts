@@ -20,8 +20,22 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: false,
   ssl: process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
+  extra: {
+    family: 4
+  },
   entities: [Product, Invent, Usuario, Rol, Proveedor, Pedido, DetallePedido, Venta, DetalleVenta]
 });
+/*export const AppDataSource = new DataSource({
+  type: 'postgres',
+  host: process.env.DB_HOST || "localhost",
+  port: parseInt(process.env.DB_PORT || '5432'),
+  username: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  synchronize: false,
+  ssl: process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
+  entities: [Product, Invent, Usuario, Rol, Proveedor, Pedido, DetallePedido, Venta, DetalleVenta]
+});*/
 export const conexion= async() =>{
   try {
     await AppDataSource.initialize();
