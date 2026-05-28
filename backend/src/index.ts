@@ -18,7 +18,7 @@ app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
       "http://localhost:5173",
-      "https://tu-frontend.vercel.app"
+      "https://6a1829aface59f287022a239--incredible-alpaca-6899dc.netlify.app/"
     ];
 
     if (!origin || allowedOrigins.includes(origin)) {
