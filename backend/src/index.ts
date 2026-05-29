@@ -1,54 +1,43 @@
 import express from "express";
-import cors from "cors";  // ← 1. npm install cors @types/cors
+import cors from "cors";
 import productRoutes from "./routes/product.routes";
 import inventRoutes from "./routes/invent.rountes";
 import usuariosRoutes from "./routes/usuarios.routes";
-import proveedoresRouter from "./routes/proveedores.routes"
-import pedidosRouter from "./routes/pedidos.routes"
-import detallePedidoRouter from "./routes/detallePedido.routes"
-import authRoutes from "./routes/auth.routes"
-import ventaRoutes from "./routes/venta.routes"
+import proveedoresRouter from "./routes/proveedores.routes";
+import pedidosRouter from "./routes/pedidos.routes";
+import detallePedidoRouter from "./routes/detallePedido.routes";
+import authRoutes from "./routes/auth.routes";
+import ventaRoutes from "./routes/venta.routes";
 import { conexion } from "./config/dataBase";
-
-
 
 const app = express();
 
 app.use(cors({
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "https://6a1829aface59f287022a239--incredible-alpaca-6899dc.netlify.app/"
-    ];
-
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("No permitido por CORS"));
-    }
-  },
+  origin: [
+    "http://localhost:5173",
+    "https://6a189d67d27c500008763f54--incredible-alpaca-6899dc.netlify.app"
+  ],
   credentials: true
 }));
+
 app.use(express.json());
 
 // conectar DB
 conexion();
 
-// usar rutas 
+// rutas
 app.use("/api/auth", authRoutes);
 app.use("/api", productRoutes);
-app.use("/api", inventRoutes );
+app.use("/api", inventRoutes);
 app.use("/api", usuariosRoutes);
 app.use("/api", proveedoresRouter);
 app.use("/api", pedidosRouter);
 app.use("/api", detallePedidoRouter);
-app.use('/api', ventaRoutes);
+app.use("/api", ventaRoutes);
 
+// IMPORTANTE PARA RENDER
+const PORT = process.env.PORT || 3000;
 
-
-
-
-
-app.listen(3000, () => {
-  console.log("Servidor corriendo en puerto 3000");
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });

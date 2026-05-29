@@ -5,6 +5,7 @@ import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 import { FilterBar } from '../components/ui/filterBar';
 import { Button } from '../components/ui/Button';
 import { FilterInvent } from '../components/ui/filterInvent';
+import Select from 'react-select';
 
 const API_URL = 'http://localhost:3000/api/inventario'; //url del servidor
 
@@ -146,8 +147,9 @@ export default function Inventario() {
       e.target.reset();
     } catch (error) {
       console.error('Error al guardar', error);
+      const mensaje =  error.response?.data?.message || 'No se pudo guardar';
 
-      alert('No se pudo guardar');
+      alert(mensaje);
     }
   };
 
@@ -185,23 +187,43 @@ export default function Inventario() {
         <form onSubmit={handleGuardar}>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
             {/* PRODUCTO */}
-            <select
+            <Select
+              options={productos.map(p => ({
+                value: p.id,
+                label: `${p.codigo_barras} - ${p.descripcion}`
+              }))}
+              defaultValue={productos
+                .map(p => ({
+                  value: p.id,
+                  label: `${p.codigo_barras} - ${p.descripcion}`
+                }))
+                .find(option => option.value === editingInvent?.id_producto)}
+              onChange={selected => {
+                const hiddenInput = document.getElementById('id_producto_hidden');
+                if (hiddenInput) {
+                  hiddenInput.value = selected?.value || '';
+                }
+              }}
+              placeholder="Buscar producto..."
+              isSearchable
+              className="text-sm"
+              styles={{
+                control: base => ({
+                  ...base,
+                  borderRadius: '12px',
+                  minHeight: '48px',
+                  borderColor: '#cbd5e1'
+                })
+              }}
+            />
+
+            {/* input oculto para FormData */}
+            <input
+              type="hidden"
+              id="id_producto_hidden"
               name="id_producto"
               defaultValue={editingInvent?.id_producto || ''}
-              required
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
-            >
-              <option value="">Seleccione un producto</option>
-
-              {productos.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.codigo_barras}
-                  {' - '}
-                  {p.descripcion}
-                </option>
-              ))}
-            </select>
-
+            />
             {/* TIPO */}
             <select
               name="tipo_movimiento"

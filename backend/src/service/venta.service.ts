@@ -55,7 +55,7 @@ if (!guardarVenta.id_venta) {
     // Retornar venta completa
 
     return await this.findOne(guardarVenta.id_venta);
-  }
+  } 
 
   // =========================
   // OBTENER UNA VENTA

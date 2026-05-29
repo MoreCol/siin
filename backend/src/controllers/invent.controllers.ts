@@ -24,17 +24,35 @@ export const createInvent = async (req: Request, res: Response) => {
      res.status(201).json(invent);
    
   } catch (error: any) {
+        console.error(error);
     res.status(400).json({ message: error.message });
   }
 };
 
 
 export const updateInvent = async (req: Request, res: Response) => {
-  const invent = await service.update(Number(req.params.id), req.body);
-  if (!invent) return res.status(404).json({ message: 'Not found' });
-  res.json(invent);
-};
+  try {
+    const invent = await service.update(
+      Number(req.params.id),
+      req.body
+    );
 
+    if (!invent) {
+      return res.status(404).json({
+        message: 'Not found'
+      });
+    }
+
+    res.json(invent);
+
+  } catch (error: any) {
+    console.error(error);
+
+    res.status(400).json({
+      message: error.message
+    });
+  }
+};
 
 export const deleteInvent = async (req: Request, res: Response) => {
   const result = await service.delete(Number(req.params.id));

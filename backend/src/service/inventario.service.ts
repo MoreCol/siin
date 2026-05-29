@@ -56,7 +56,7 @@ export class InventService {
         producto.stock_actual += cantidadNueva;
       } else if (data.tipo_movimiento === 'salida') {
         if (producto.stock_actual < cantidadNueva) {
-          throw new Error('Stock insuficiente');
+          throw new Error( `Stock insuficiente. Solo quedan ${producto.stock_actual} unidades`);
         }
         producto.stock_actual -= cantidadNueva;
       } else if (data.tipo_movimiento === 'ajuste') {

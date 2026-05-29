@@ -162,34 +162,44 @@ export default function Productos() {
 
         <form onSubmit={handleGuardar}>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
-            <input
-              name="codigo"
-              defaultValue={editingProduct?.codigo}
-              placeholder="Código"
-              required
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
-            />
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Código del producto </label>
+              <input
+                name="codigo"
+                defaultValue={editingProduct?.codigo}
+                placeholder="Código"
+                required
+                className="rounded-xl border  border-slate-300 !px-4 !py-3"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Categorías</label>
+              <select
+                name="categoria"
+                defaultValue={editingProduct?.categoria || ''}
+                required
+                className="rounded-xl border border-slate-300 !px-4 !py-3"
+              >
+                <option value="">Categoría...</option>
+                <option value="Material Escolar">Material Escolar</option>
+                 <option value="Accesorios Escolares">Accesorios Escolares </option>
+                <option value="Oficina">Oficina</option>
+                <option value="Escritura y dibujo">Escritura y dibujo</option>
+                <option value="Artes y manualidades">Artes y manualidades</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Estado del producto</label>
 
-            <select
-              name="categoria"
-              defaultValue={editingProduct?.categoria || ''}
-              required
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
-            >
-              <option value="">Categoría...</option>
-              <option value="Material Escolar">Material Escolar</option>
-              <option value="Material de Oficina">Material de Oficina</option>
-            </select>
-
-            <select
-              name="estado"
-              defaultValue={editingProduct?.estado ?? 'Activo'}
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
-            >
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-            </select>
-
+              <select
+                name="estado"
+                defaultValue={editingProduct?.estado ?? 'Activo'}
+                className="rounded-xl border border-slate-300 !px-4 !py-3"
+              >
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
             <input
               name="descripcion"
               defaultValue={editingProduct?.descripcion}
@@ -261,7 +271,11 @@ export default function Productos() {
           >
             <option value="">Todas las categorías</option>
             <option value="Material Escolar">Material Escolar</option>
-            <option value="Material de Oficina">Material de Oficina</option>
+             <option value="Accesorios escolares">Accesorios escolares</option>
+            <option value="Oficina">Oficina</option>
+           
+            <option value="Escritura y dibujo">Escritura y dibujo</option>
+            <option value="Artes y manualidades">Artes y manualidades</option>
           </select>
         }
         disponibilidad={
@@ -308,7 +322,8 @@ export default function Productos() {
                   'Categoría',
                   'Precio Compra',
                   'Precio Venta',
-                  'Stock',
+                  'Stock Actual',
+                  'Stock Minimo',
                   'Estado',
                   'Acciones'
                 ].map(header => (
@@ -400,8 +415,21 @@ export default function Productos() {
                   }
                 `}
                     >
-                      {getDisponibilidad(producto.stock_Actual, producto.stock_Minimo)}
+                      {producto.stock_Actual}
                     </span>
+                  </td>
+                  <td   className="
+                !px-8 !py-5
+                border-b border-slate-100
+                align-middle
+                font-semibold
+                text-base
+              "  >
+                <span>
+                  {producto.stock_Minimo}
+                </span>
+
+
                   </td>
 
                   <td className="!px-8 !py-5 border-b border-slate-100 align-middle">

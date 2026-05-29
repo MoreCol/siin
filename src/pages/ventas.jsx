@@ -4,6 +4,7 @@ import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 import * as XLSX from 'xlsx';
 import { Button } from '../components/ui/Button';
 import { FilterBar } from '../components/ui/filterBar';
+import Select from 'react-select';
 
 const API_VENTAS = 'http://localhost:3000/api/ventas';
 const API_PRODUCTOS = 'http://localhost:3000/api/products';
@@ -267,19 +268,39 @@ export default function Ventas() {
 
         {/* FORM AGREGAR ÍTEM */}
         <form onSubmit={agregarItem} className="grid grid-cols-1 md:grid-cols-4 !gap-3 !mb-6">
-          <select
-            value={itemForm.id_producto}
-            onChange={e => setItemForm({ ...itemForm, id_producto: e.target.value })}
-            className=" md:col-span-3  rounded-xl border border-slate-300 !px-4 !py-3"
-          >
-            <option value="">Seleccionar producto</option>
-            {productos.map(p => (
-              <option key={p.id} value={p.id} disabled={p.stock <= 0}>
-                {p.descripcion}
-                {p.stock <= 0 ? ' (Agotado)' : ''}
-              </option>
-            ))}
-          </select>
+          <Select
+            options={productos.map(p => ({
+              value: p.id,
+              label: `${p.descripcion}${p.stock <= 0 ? ' (Agotado)' : ''}`,
+              isDisabled: p.stock <= 0
+            }))}
+            value={
+              productos
+                .filter(p => p.id === Number(itemForm.id_producto))
+                .map(p => ({
+                  value: p.id,
+                  label: `${p.descripcion}${p.stock <= 0 ? ' (Agotado)' : ''}`,
+                  isDisabled: p.stock <= 0
+                }))[0] || null
+            }
+            onChange={selected =>
+              setItemForm({
+                ...itemForm,
+                id_producto: selected?.value || ''
+              })
+            }
+            placeholder="Seleccionar producto"
+            isSearchable
+            className="md:col-span-3 text-sm"
+           styles={{
+                control: base => ({
+                  ...base,
+                  borderRadius: '12px',
+                  minHeight: '48px',
+                  borderColor: '#cbd5e1'
+                })
+              }}
+          />
 
           <input
             type="number"
