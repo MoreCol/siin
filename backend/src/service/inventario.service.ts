@@ -6,7 +6,7 @@ import { Usuario } from '../entity/usuarios';
 export class InventService {
   private repo = AppDataSource.getRepository(Invent);
   private repoProducto = AppDataSource.getRepository(Product);
-  private repoUsuario = AppDataSource.getRepository(Usuario)
+  private repoUsuario = AppDataSource.getRepository(Usuario);
   async findAll() {
     return await this.repo.find({
       relations: ['producto', 'usuario'],
@@ -25,6 +25,12 @@ export class InventService {
     const cantidad = Number(data.cantidad);
     if (data.tipo_movimiento === 'entrada') {
       producto.stock_actual += cantidad;
+
+      if (data.costo_unitario !== undefined) {
+        const costo = Number(data.costo_unitario);
+        producto.precio_compra = costo;
+        producto.precio_venta = costo * (1 + Number(producto.porcentaje_ganancia) / 100);
+      }
     } else if (data.tipo_movimiento === 'salida') {
       if (producto.stock_actual < cantidad) {
         throw new Error('Stock insuficiente');
@@ -56,11 +62,18 @@ export class InventService {
         producto.stock_actual += cantidadNueva;
       } else if (data.tipo_movimiento === 'salida') {
         if (producto.stock_actual < cantidadNueva) {
-          throw new Error( `Stock insuficiente. Solo quedan ${producto.stock_actual} unidades`);
+          throw new Error(`Stock insuficiente. Solo quedan ${producto.stock_actual} unidades`);
         }
         producto.stock_actual -= cantidadNueva;
       } else if (data.tipo_movimiento === 'ajuste') {
         producto.stock_actual = cantidadNueva;
+      }
+      if ((data.tipo_movimiento ?? invent.tipo_movimiento) === 'entrada' && data.costo_unitario !== undefined) {
+        const costo = Number(data.costo_unitario);
+
+        producto.precio_compra = costo;
+
+        producto.precio_venta = costo * (1 + Number(producto.porcentaje_ganancia) / 100);
       }
 
       await this.repoProducto.save(producto);
@@ -69,7 +82,28 @@ export class InventService {
     return await this.repo.save(invent);
     //UPDATE PRODUCTOS
   }
+
   async delete(id: number) {
+    // 1. Busca el movimiento antes de eliminarlo
+    const invent = await this.findOne(id);
+    if (!invent) return null;
+
+    // 2. Revierte el stock del producto
+    const producto = await this.repoProducto.findOneBy({ id: invent.id_producto });
+    if (producto) {
+      const cantidad = Number(invent.cantidad);
+
+      if (invent.tipo_movimiento === 'entrada') {
+        producto.stock_actual -= cantidad; // revierte entrada
+      } else if (invent.tipo_movimiento === 'salida') {
+        producto.stock_actual += cantidad; // revierte salida
+      }
+      // ajuste no se puede revertir automáticamente — ignora
+
+      await this.repoProducto.save(producto);
+    }
+
+    // 3. Elimina el movimiento
     return await this.repo.delete(id);
   }
 }

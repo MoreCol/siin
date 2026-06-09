@@ -92,90 +92,186 @@ export default function Register() {
     }
   };
 
-  return (
-    <div className="login-wrapper">
-      <div className="login-card">
-        <div className="login-container">
-          <p className="empresa-nombre">Miscelanea Moreno</p>
-          <h1 id="login-name">Registro de Usuario</h1>
+ return (
+  <div className="min-h-screen flex items-center justify-center p-5 bg-slate-100">
+    <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-xl border border-slate-200">
+      <div className="flex flex-col gap-5">
+        <p className="text-left text-[20px] font-bold text-[#264d75]">
+          Miscelanea Moreno
+        </p>
 
-          <form className="login-fields" onSubmit={handleRegister}>
-            <label className="login-label" htmlFor="nombre">
-              Nombre
-            </label>
+        <h1 className="text-center text-4xl font-bold text-[#264d75]">
+          Registro de Usuario
+        </h1>
+
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={handleRegister}
+        >
+          {/* Nombre */}
+          <label
+            htmlFor="nombre"
+            className=" font-bold text-slate-600"
+          >
+            Nombre
+          </label>
+
+          <input
+            id="nombre"
+            name="nombre"
+            type="text"
+            placeholder="Ingresa tu nombre"
+            value={form.nombre}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+
+          {errors.nombre && (
+            <p className=" text-red-500">
+              {errors.nombre}
+            </p>
+          )}
+
+          {/* Apellido */}
+          <label
+            htmlFor="apellido"
+            className=" font-bold text-slate-600"
+          >
+            Apellido
+          </label>
+
+          <input
+            id="apellido"
+            name="apellido"
+            type="text"
+            placeholder="Ingresa tu apellido"
+            value={form.apellido}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+
+          {errors.apellido && (
+            <p className="text-sm text-red-500">
+              {errors.apellido}
+            </p>
+          )}
+
+          {/* Correo */}
+          <label
+            htmlFor="correo"
+            className="font-bold text-slate-600"
+          >
+            Correo
+          </label>
+
+          <input
+            id="correo"
+            name="correo"
+            type="email"
+            placeholder="Ingresa tu correo"
+            value={form.correo}
+            onChange={handleChange}
+            className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          />
+
+          {errors.correo && (
+            <p className="text-sm text-red-500">
+              {errors.correo}
+            </p>
+          )}
+
+          {/* Contraseña */}
+          <label
+            htmlFor="password"
+            className=" font-bold text-slate-600"
+          >
+            Contraseña
+          </label>
+
+          <div className="relative">
             <input
-              id="nombre"
-              name="nombre"
-              type="text"
-              placeholder="Ingresa tu nombre"
-              value={form.nombre}
+              id="password"
+              name="password"
+              type={verPassword ? 'text' : 'password'}
+              placeholder="Crea una contraseña"
+              value={form.password}
               onChange={handleChange}
+              className="w-full rounded-lg border border-slate-300 px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
-            {errors.nombre && <p style={{ color: 'red', margin: 0 }}>{errors.nombre}</p>}
 
-            <label className="login-label" htmlFor="apellido">
-              Apellido
-            </label>
-            <input
-              id="apellido"
-              name="apellido"
-              type="text"
-              placeholder="Ingresa tu apellido"
-              value={form.apellido}
-              onChange={handleChange}
-            />
-            {errors.apellido && <p style={{ color: 'red', margin: 0 }}>{errors.apellido}</p>}
-
-            <label className="login-label" htmlFor="correo">
-              Correo
-            </label>
-            <input
-              id="correo"
-              name="correo"
-              type="email"
-              placeholder="Ingresa tu correo"
-              value={form.correo}
-              onChange={handleChange}
-            />
-            {errors.correo && <p style={{ color: 'red', margin: 0 }}>{errors.correo}</p>}
-
-            <label className="login-label" htmlFor="password">
-              Contraseña
-            </label>
-            <div className="password-wrapper">
-              <input
-                id="password"
-                name="password"
-                type={verPassword ? 'text': 'password'}
-                placeholder="Crea una contraseña"
-                value={form.password}
-                onChange={handleChange}
-              />
-              <span  className='toggle-password'
-                onClick={()=>setVerPassword(!verPassword)}>
-                  {verPassword?<MdVisibilityOff /> : <MdVisibility />}
-              </span>
-            </div>
-
-            {errors.password && <p style={{ color: 'red', margin: 0 }}>{errors.password}</p>}
-
-            {errorServer && <p style={{ color: 'red', margin: 0 }}>{errorServer}</p>}
-
-            <button className="login-button" type="submit">
-              Registrarse
+            <button
+              type="button"
+              onClick={() => setVerPassword(!verPassword)}
+              className="
+                absolute
+                right-4
+                top-1/2
+                -translate-y-1/2
+                text-xl
+                text-blue-600
+                hover:text-blue-500
+              "
+            >
+              {verPassword ? (
+                <MdVisibilityOff />
+              ) : (
+                <MdVisibility />
+              )}
             </button>
-
-            {mensajeExito && <p className="p-exito">{mensajeExito}</p>}
-          </form>
-
-          <div style={{ marginTop: 20, fontSize: '0.9rem' }}>
-            <span>¿Ya tienes cuenta? </span>
-            <Link to="/" style={{ color: '#007BFF', textDecoration: 'none' }}>
-              Iniciar sesión
-            </Link>
           </div>
+
+          {errors.password && (
+            <p className="text-sm text-red-500">
+              {errors.password}
+            </p>
+          )}
+
+          {errorServer && (
+            <p className="text-sm text-red-500">
+              {errorServer}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="
+              mt-2
+              w-full
+              rounded-lg
+              bg-blue-600
+              px-4
+              py-3
+              font-bold
+              text-white
+              transition
+              hover:bg-blue-700
+              active:scale-95
+            "
+          >
+            Registrarse
+          </button>
+
+          {mensajeExito && (
+            <p className="text-center font-bold text-green-600">
+              {mensajeExito}
+            </p>
+          )}
+        </form>
+
+        <div className="mt-3 text-sm">
+          <span className="  text-[15px]  text-slate-600">
+            ¿Ya tienes cuenta?
+          </span>
+
+          <Link
+            to="/"
+            className="ml-2  text-[18px]  text-blue-600 hover:underline"
+          >
+            Iniciar sesión
+          </Link>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

@@ -1,10 +1,12 @@
 import { AppDataSource } from '../config/dataBase';
 import { DetalleVenta } from '../entity/detalleVentas';
 import { Venta } from '../entity/ventas';
+import { Product } from '../entity/product';
 
 export class VentaService {
   private ventaRepo = AppDataSource.getRepository(Venta);
   private detalleRepo = AppDataSource.getRepository(DetalleVenta);
+  private repoProducto = AppDataSource.getRepository(Product);
 
   // =========================
   // CREAR VENTA
@@ -19,6 +21,14 @@ export class VentaService {
   async create(data: any) {
     const { detalles = [], ...ventaData } = data;
 
+    for (const d of detalles) {
+      const producto = await this.repoProducto.findOneBy({ id: Number(d.id_producto) });
+      if (!producto) throw new Error(`Producto ${d.id_producto} no encontrado`);
+      if (producto.stock_actual < Number(d.cantidad)) {
+        throw new Error(`Stock insuficiente para: ${producto.descripcion}`);
+      }
+    }
+
     // Crear venta
     const venta = this.ventaRepo.create({
       usuario: {
@@ -32,17 +42,16 @@ export class VentaService {
 
     // Guardar venta
     const guardarVenta = await this.ventaRepo.save(venta);
-if (!guardarVenta.id_venta) {
-  throw new Error("No se generó id_venta");
-}
-    // Crear detalles
+    if (!guardarVenta.id_venta) {
+      throw new Error('No se generó id_venta');
+    }
+
     const detalleVenta = detalles.map((d: any) =>
       this.detalleRepo.create({
-        id: d.id, // id propio del detalle
         id_producto: Number(d.id_producto),
 
         // id de la venta recién creada
-        id_venta:guardarVenta.id_venta,
+        id_venta: guardarVenta.id_venta,
 
         cantidad: Number(d.cantidad),
         subtotal: Number(d.subtotal)
@@ -52,10 +61,18 @@ if (!guardarVenta.id_venta) {
     // Guardar detalles
     await this.detalleRepo.save(detalleVenta);
 
+    for (const d of detalles) {
+      const producto = await this.repoProducto.findOneBy({ id: Number(d.id_producto) });
+      if (producto) {
+        producto.stock_actual -= Number(d.cantidad);
+        await this.repoProducto.save(producto);
+      }
+    }
+
     // Retornar venta completa
 
     return await this.findOne(guardarVenta.id_venta);
-  } 
+  }
 
   // =========================
   // OBTENER UNA VENTA
@@ -101,6 +118,7 @@ if (!guardarVenta.id_venta) {
           subtotal: Number(d.subtotal)
         })
       );
+      console.log(nuevosDetalles);
 
       await this.detalleRepo.save(nuevosDetalles);
     }
@@ -112,6 +130,16 @@ if (!guardarVenta.id_venta) {
   // ELIMINAR VENTA
   // =========================
   async delete(id: number) {
+    const detalles = await this.detalleRepo.find({ where: { id_venta: id } });
+
+    for (const d of detalles) {
+      const producto = await this.repoProducto.findOneBy({ id: d.id_producto });
+      if (producto) {
+        producto.stock_actual += Number(d.cantidad);
+        await this.repoProducto.save(producto);
+      }
+    }
+
     // eliminar detalles primero
     await this.detalleRepo.delete({
       id_venta: id

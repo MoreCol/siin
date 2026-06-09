@@ -36,11 +36,18 @@ export class Product {
   @Column()
   estado!: string;
 
+  @Column('decimal', {
+  precision: 5,
+  scale: 2,
+  default: 40
+})
+  porcentaje_ganancia!: number;
+
   @OneToMany(() => Invent, invent => invent.producto)
   inventario_movimientos!: Invent[];
   @OneToMany(() => DetallePedido, detalle => detalle.producto)
   detalle_pedido!: DetallePedido[];
 
-   @OneToMany(() => DetalleVenta, detalleVenta => DetalleVenta.producto)
-   detallesVenta: DetalleVenta[] | undefined;
+  @OneToMany(() => DetalleVenta, detalleVenta => DetalleVenta.producto)
+  detallesVenta: DetalleVenta[] | undefined;
 }

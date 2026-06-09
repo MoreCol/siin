@@ -1,57 +1,42 @@
-import { Entity,PrimaryGeneratedColumn, Column,ManyToOne,JoinColumn} from "typeorm";
-import { Product } from "./product";
-import { Usuario } from "./usuarios";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Product } from './product';
+import { Usuario } from './usuarios';
 
 @Entity('inventario_movimientos')
-export class Invent{
+export class Invent {
+  @PrimaryGeneratedColumn()
+  id_movimiento!: number;
 
+  @Column()
+  id_producto!: number;
 
+  @Column()
+  id_usuario!: number;
 
-@PrimaryGeneratedColumn()
-id_movimiento!:number;
+  @Column()
+  tipo_movimiento!: string;
 
+  @Column()
+  cantidad!: number;
 
-@Column()
-id_producto!:number;
+  @Column()
+  costo_unitario!: number;
+  @Column()
+  numero_factura!: string;
 
+  @Column()
+  fecha_movimiento!: Date;
 
+  @Column()
+  descripcion!: string;
 
-@Column()
-id_usuario!: number;
+  @ManyToOne(() => Product, producto => producto.inventario_movimientos)
+  @JoinColumn({ name: 'id_producto' })
+  producto!: Product;
 
-
-@Column()
-tipo_movimiento!: string;
-
-
-
-@Column()
-cantidad!: number;
-
-
-
-@Column()
-fecha_movimiento!: Date;
-
-
-@Column()
-descripcion!: string;
-
-
-@ManyToOne(()=> Product,producto => producto.inventario_movimientos)
-@JoinColumn({name:'id_producto'})
-producto!: Product;
-
- @ManyToOne(
-    () => Usuario,
-    usuario => usuario.inventarios
-  )
+  @ManyToOne(() => Usuario, usuario => usuario.inventarios)
   @JoinColumn({
     name: 'id_usuario'
   })
   usuario!: Usuario;
-
-
-
-
 }

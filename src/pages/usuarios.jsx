@@ -121,14 +121,14 @@ export default function Usuarios() {
     <div className="mx-auto">
 
       {/* HEADER */}
-      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">
+      <h1 className="text-4xl font-bold text-slate-800 px-6 py-6">
         Usuarios
       </h1>
 
       {/* FORM */}
-      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-6">
 
-        <div className="flex justify-between items-center !mb-6">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-slate-800">
             {editing ? 'Editar usuario' : 'Nuevo usuario'}
           </h2>
@@ -141,41 +141,41 @@ export default function Usuarios() {
         </div>
 
         <form onSubmit={guardar}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
             <input name="nombre" value={form.nombre} onChange={handleChange}
               placeholder="Nombre"
-              className="rounded-xl border border-slate-300 !px-4 !py-3" />
+              className="rounded-xl border border-slate-300 px-4 py-3" />
 
             <input name="apellido" value={form.apellido} onChange={handleChange}
               placeholder="Apellido"
-              className="rounded-xl border border-slate-300 !px-4 !py-3" />
+              className="rounded-xl border border-slate-300 px-4 py-3" />
 
             <input name="correo" value={form.correo} onChange={handleChange}
               placeholder="Correo"
-              className="rounded-xl border border-slate-300 !px-4 !py-3" />
+              className="rounded-xl border border-slate-300 px-4 py-3" />
 
             <input name="password" value={form.password} onChange={handleChange}
               placeholder="Contraseña"
               type="password"
-              className="rounded-xl border border-slate-300 !px-4 !py-3" />
+              className="rounded-xl border border-slate-300 px-4 py-3" />
 
             <select name="id_rol" value={form.id_rol} onChange={handleChange}
-              className="rounded-xl border border-slate-300 !px-4 !py-3">
+              className="rounded-xl border border-slate-300 px-4 py-3">
               <option value={1}>Admin</option>
               <option value={2}>Cajero</option>
               <option value={3}>Inventario</option>
             </select>
 
             <select name="estado" value={form.estado} onChange={handleChange}
-              className="rounded-xl border border-slate-300 !px-4 !py-3">
+              className="rounded-xl border border-slate-300 px-4 py-3">
               <option value="Activo">Activo</option>
               <option value="Inactivo">Inactivo</option>
             </select>
 
           </div>
 
-          <div className="flex justify-end !gap-3 !mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <Button type="button" variant="cancel" onClick={limpiar}>
               Limpiar
             </Button>
@@ -196,7 +196,7 @@ export default function Usuarios() {
       bg-white">
 
         <table className="w-full
-        min-w-[900px]
+        .min-w-[900px]
         border-collapse
         overflow-hidden
         rounded-2xl
@@ -205,11 +205,11 @@ export default function Usuarios() {
             <tr>
               {['Nombre', 'Apellido', 'Correo', 'Rol', 'Estado', 'Acciones']
                 .map(h => (
-                  <th key={h} className="  bg-gradient-to-br
+                  <th key={h} className="  .bg-gradient-to-br
                 from-slate-50
                 to-slate-100
-                !px-4
-                !py-5
+                px-4
+                py-5
                 text-left
                 text-[0.9rem]
                 font-semibold
@@ -229,12 +229,12 @@ export default function Usuarios() {
               <tr key={u.id_usuario} className=" hover:bg-blue-500/5
               transition-colors">
 
-                <td className="!px-4 !py-3 border-b border-slate-100 align-middle">{u.nombre}</td>
-                <td className="!px-4 !py-5 border-b border-slate-100 align-middle">{u.apellido}</td>
-                <td className="!px-4 !py-5 border-b border-slate-100 align-middle">{u.correo}</td>
-                <td className="!px-4 !py-5 border-b border-slate-100 align-middle">{u.id_rol}</td>
+                <td className="px-4 py-3 border-b border-slate-100 align-middle">{u.nombre}</td>
+                <td className="px-4 py-5 border-b border-slate-100 align-middle">{u.apellido}</td>
+                <td className="px-4 py-5 border-b border-slate-100 align-middle">{u.correo}</td>
+                <td className="px-4 py-5 border-b border-slate-100 align-middle">{u.id_rol}</td>
 
-                <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                <td className="px-8 py-5 border-b border-slate-100 align-middle">
                   <span className={`px-2 py-1 rounded-full text-xs
                     ${u.estado === 'Activo'
                       ? 'bg-green-100 text-green-700'
@@ -243,7 +243,7 @@ export default function Usuarios() {
                   </span>
                 </td>
 
-                <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                <td className="px-8 py-5 border-b border-slate-100 align-middle">
                   <Button variant="edit" onClick={() => editar(u)}>
                     <MdEdit />
                   </Button>

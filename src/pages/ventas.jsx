@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, Fragment } from 'react';
 import axios from 'axios';
-import { MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import { MdEdit, MdDelete } from 'react-icons/md';
 import * as XLSX from 'xlsx';
 import { Button } from '../components/ui/Button';
 import { FilterBar } from '../components/ui/filterBar';
@@ -10,7 +10,7 @@ const API_VENTAS = 'http://localhost:3000/api/ventas';
 const API_PRODUCTOS = 'http://localhost:3000/api/products';
 
 const initialVenta = {
-  id_usuario: 74,
+  id_usuario: '',
   fecha_venta: '',
   metodo_pago: 'Efectivo',
   estado: 'Pagado'
@@ -21,6 +21,7 @@ const initialItem = { id_producto: '', cantidad: 1 };
 export default function Ventas() {
   const [ventas, setVentas] = useState([]);
   const [productos, setProductos] = useState([]);
+
   const [ventaForm, setVentaForm] = useState(initialVenta);
   const [itemForm, setItemForm] = useState(initialItem);
   const [items, setItems] = useState([]);
@@ -49,14 +50,14 @@ export default function Ventas() {
   const cargarProductos = async () => {
     try {
       const res = await axios.get(API_PRODUCTOS);
-      setProductos(res.data.data);
+      setProductos(res.data.data ?? res.data);
     } catch (err) {
       console.error('Error cargando productos:', err);
     }
   };
 
   // ─── helpers ──────────────────────────────────────────────
-  const subtotal = useMemo(() => items.reduce((acc, it) => acc + it.cantidad * it.precio_venta, 0), [items]);
+  const totalItems = useMemo(() => items.reduce((acc, it) => acc + it.cantidad * it.precio_venta, 0), [items]);
 
   const ventasFiltradas = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -86,7 +87,7 @@ export default function Ventas() {
   const agregarItem = e => {
     e.preventDefault();
     if (!itemForm.id_producto) return alert('Seleccione un producto');
-    if (itemForm.cantidad < 1) return alert('Cantidad inválida');
+    if (Number(itemForm.cantidad) < 1) return alert('Cantidad inválida');
 
     const prod = productos.find(p => Number(p.id) === Number(itemForm.id_producto));
     if (!prod) return alert('Producto no válido');
@@ -105,9 +106,7 @@ export default function Ventas() {
     setItemForm(initialItem);
   };
 
-  const eliminarItem = id => {
-    setItems(prev => prev.filter(i => i.id !== id));
-  };
+  const eliminarItem = id => setItems(prev => prev.filter(i => i.id !== id));
 
   // ─── CRUD ventas ──────────────────────────────────────────
   const handleGuardar = async () => {
@@ -116,53 +115,61 @@ export default function Ventas() {
     if (!ventaForm.estado) return alert('Falta el estado');
     if (!ventaForm.id_usuario) return alert('Falta el usuario');
 
-    const payload = {
-      id_usuario: Number(ventaForm.id_usuario),
-      fecha_venta: ventaForm.fecha_venta,
-      metodo_pago: ventaForm.metodo_pago, // 🔥 IMPORTANTE
-      estado: ventaForm.estado,
-      total: Number(subtotal),
-      detalles: items.map(i => ({
-        id_producto: i.id_producto,
-        cantidad: i.cantidad,
-        subtotal: i.subtotal
-      }))
-    };
-
-    console.log('PAYLOAD FINAL:', payload);
-
     try {
+      const payload = {
+        id_usuario: Number(ventaForm.id_usuario),
+        fecha_venta: ventaForm.fecha_venta,
+        metodo_pago: ventaForm.metodo_pago,
+        estado: ventaForm.estado,
+        total: totalItems,
+        detalles: items.map(i => ({
+          id_producto: i.id_producto,
+          cantidad: i.cantidad,
+          subtotal: i.subtotal
+        }))
+      };
+
       if (editingVenta) {
         await axios.put(`${API_VENTAS}/${editingVenta.id_venta}`, payload);
       } else {
         await axios.post(API_VENTAS, payload);
       }
 
+      // EXACTAMENTE IGUAL A PEDIDOS
+      resetForm(); // ← primero limpia
+
       await cargarVentas();
       resetForm();
-    } catch (err) {
-      console.error('Error guardando venta:', err);
-      alert('No se pudo guardar la venta');
+    } catch (error) {
+  console.error('Error guardando venta:', error);
+  console.error('Detalle:', error.response?.data); // ← agrega esta línea
+  alert('No se pudo guardar: ' + JSON.stringify(error.response?.data));
     }
   };
   const editarVenta = v => {
     setEditingVenta(v);
     setVentaForm({
-      id_usuario: v.id_usuario,
+      id_usuario: v.id_usuario ?? '',
       fecha_venta: v.fecha_venta?.split('T')[0] || '',
-      metodo_pago: v.metodo_pago,
-      estado: v.estado
+      metodo_pago: v.metodo_pago ?? 'Efectivo',
+      estado: v.estado ?? 'Pagado'
     });
     setItems(
-      (v.detalles || []).map(d => ({
-        id: Date.now() + Math.random(),
-        id_producto: d.id_producto,
-        descripcion: d.producto?.descripcion || 'Sin producto',
-        cantidad: Number(d.cantidad),
-        precio_venta: Number(d.subtotal) / Number(d.cantidad),
-        subtotal: Number(d.subtotal)
-      }))
+      (v.detalles || []).map(d => {
+        const cantNum = Number(d.cantidad);
+        const subNum = Number(d.subtotal);
+        const precioUn = cantNum > 0 ? subNum / cantNum : 0;
+        return {
+          id: Date.now() + Math.random(),
+          id_producto: d.id_producto,
+          descripcion: d.producto?.descripcion || 'Sin producto',
+          cantidad: cantNum,
+          precio_venta: precioUn,
+          subtotal: subNum
+        };
+      })
     );
+    setItemForm(initialItem);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -214,11 +221,11 @@ export default function Ventas() {
   return (
     <div className="mx-auto">
       {/* TÍTULO */}
-      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">Ventas</h1>
+      <h1 className="text-4xl font-bold text-slate-800 px-6 py-6">Ventas</h1>
 
       {/* ── FORMULARIO PRINCIPAL ─────────────────────────────── */}
-      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
-        <div className="flex justify-between items-center !mb-6">
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-6">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-slate-800">{editingVenta ? 'Editar venta' : 'Nueva venta'}</h2>
           {editingVenta && (
             <Button variant="cancel" onClick={resetForm}>
@@ -227,15 +234,27 @@ export default function Ventas() {
           )}
         </div>
 
-        {/* FECHA · MÉTODO · ESTADO */}
-        <div className="grid grid-cols-1 md:grid-cols-3 !gap-5 !mb-6">
+        {/* FECHA · ID USUARIO · MÉTODO · ESTADO */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Fecha de venta</label>
             <input
               type="date"
               value={ventaForm.fecha_venta}
               onChange={e => setVentaForm({ ...ventaForm, fecha_venta: e.target.value })}
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">ID Usuario</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="Ej: 1"
+              value={ventaForm.id_usuario}
+              onChange={e => setVentaForm({ ...ventaForm, id_usuario: e.target.value })}
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
           </div>
 
@@ -244,7 +263,7 @@ export default function Ventas() {
             <select
               value={ventaForm.metodo_pago}
               onChange={e => setVentaForm({ ...ventaForm, metodo_pago: e.target.value })}
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             >
               <option value="Efectivo">Efectivo</option>
               <option value="Nequi">Nequi</option>
@@ -257,7 +276,7 @@ export default function Ventas() {
             <select
               value={ventaForm.estado}
               onChange={e => setVentaForm({ ...ventaForm, estado: e.target.value })}
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             >
               <option value="Pagado">Pagado</option>
               <option value="Pendiente">Pendiente</option>
@@ -267,7 +286,7 @@ export default function Ventas() {
         </div>
 
         {/* FORM AGREGAR ÍTEM */}
-        <form onSubmit={agregarItem} className="grid grid-cols-1 md:grid-cols-4 !gap-3 !mb-6">
+        <form onSubmit={agregarItem} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
           <Select
             options={productos.map(p => ({
               value: p.id,
@@ -276,30 +295,25 @@ export default function Ventas() {
             }))}
             value={
               productos
-                .filter(p => p.id === Number(itemForm.id_producto))
+                .filter(p => Number(p.id) === Number(itemForm.id_producto))
                 .map(p => ({
                   value: p.id,
                   label: `${p.descripcion}${p.stock <= 0 ? ' (Agotado)' : ''}`,
                   isDisabled: p.stock <= 0
                 }))[0] || null
             }
-            onChange={selected =>
-              setItemForm({
-                ...itemForm,
-                id_producto: selected?.value || ''
-              })
-            }
+            onChange={selected => setItemForm({ ...itemForm, id_producto: selected?.value || '' })}
             placeholder="Seleccionar producto"
             isSearchable
             className="md:col-span-3 text-sm"
-           styles={{
-                control: base => ({
-                  ...base,
-                  borderRadius: '12px',
-                  minHeight: '48px',
-                  borderColor: '#cbd5e1'
-                })
-              }}
+            styles={{
+              control: base => ({
+                ...base,
+                borderRadius: '12px',
+                minHeight: '48px',
+                borderColor: '#cbd5e1'
+              })
+            }}
           />
 
           <input
@@ -308,21 +322,25 @@ export default function Ventas() {
             value={itemForm.cantidad}
             onChange={e => setItemForm({ ...itemForm, cantidad: e.target.value })}
             placeholder="Cantidad"
-            className="rounded-xl border border-slate-300 !px-4 !py-3   "
+            className="rounded-xl border border-slate-300 px-4 py-3"
           />
+
           <div className="md:col-span-4 flex justify-end">
-            <Button type="submit" variant="primary" className="md:col-span-1  flex justify-center  ">
-              <MdAdd className="text-xl" /> Agregar ítem
+            <Button type="submit" variant="primary">
+              Agregar ítem
             </Button>
           </div>
         </form>
-        <div className="!my-4 border-t border-slate-200" />
+
+        <div className="my-4 border-t border-slate-200" />
+
         {/* TOTAL + GUARDAR */}
-        <div className="flex justify-between items-center !mt-2">
+        <div className="flex justify-between items-center mt-2">
           <p className="text-sm text-slate-500">
-            Total estimado: <span className="font-semibold text-emerald-600">${subtotal.toLocaleString('es-CO')}</span>
+            Total estimado:{' '}
+            <span className="font-semibold text-emerald-600">${totalItems.toLocaleString('es-CO')}</span>
           </p>
-          <div className="flex !gap-3">
+          <div className="flex gap-3">
             <Button variant="cancel" onClick={resetForm}>
               Limpiar
             </Button>
@@ -334,11 +352,11 @@ export default function Ventas() {
       </section>
 
       {/* ── ÍTEMS DEL FORMULARIO ACTUAL ───────────────────────── */}
-      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
-        <h2 className="text-xl font-semibold text-slate-800 !mb-4">
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-6">
+        <h2 className="text-xl font-semibold text-slate-800 mb-4">
           Ítems de la venta
           {items.length > 0 && (
-            <span className="!ml-2 text-sm font-normal text-slate-400">
+            <span className="ml-2 text-sm font-normal text-slate-400">
               ({items.length} ítem{items.length !== 1 ? 's' : ''})
             </span>
           )}
@@ -351,8 +369,10 @@ export default function Ventas() {
                 {['Producto', 'Cantidad', 'Precio unit.', 'Subtotal', 'Acciones'].map(h => (
                   <th
                     key={h}
-                    className="!px-4 !py-3 text-left text-xs font-medium
-                      text-slate-500 uppercase tracking-wide"
+                    className=".bg-gradient-to-br from-slate-50 to-slate-100
+                      px-4 py-5 text-left font-semibold text-gray-700
+                      text-[0.9rem] uppercase tracking-[0.5px]
+                      border-b-2 border-slate-200"
                   >
                     {h}
                   </th>
@@ -362,18 +382,18 @@ export default function Ventas() {
             <tbody className="divide-y divide-slate-100">
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center !py-8 text-slate-400 text-sm">
+                  <td colSpan={5} className="text-center py-8 text-slate-400 text-sm">
                     Sin ítems agregados — usa el formulario de arriba
                   </td>
                 </tr>
               ) : (
                 items.map(i => (
                   <tr key={i.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="!px-4 !py-3 text-slate-800 font-medium">{i.descripcion}</td>
-                    <td className="!px-4 !py-3 text-slate-600">{i.cantidad}</td>
-                    <td className="!px-4 !py-3 text-slate-600">${i.precio_venta.toLocaleString('es-CO')}</td>
-                    <td className="!px-4 !py-3 text-slate-800 font-semibold">${i.subtotal.toLocaleString('es-CO')}</td>
-                    <td className="!px-4 !py-3">
+                    <td className="px-4 py-3 text-slate-800 font-medium">{i.descripcion}</td>
+                    <td className="px-4 py-3 text-slate-600">{i.cantidad}</td>
+                    <td className="px-4 py-3 text-slate-600">${i.precio_venta.toLocaleString('es-CO')}</td>
+                    <td className="px-4 py-3 text-slate-800 font-semibold">${i.subtotal.toLocaleString('es-CO')}</td>
+                    <td className="px-4 py-3">
                       <Button variant="delete" onClick={() => eliminarItem(i.id)}>
                         <MdDelete />
                       </Button>
@@ -400,11 +420,11 @@ export default function Ventas() {
       />
 
       {/* ── LISTA DE VENTAS ───────────────────────────────────── */}
-      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mt-6">
-        <div className="flex justify-between items-center !mb-4">
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mt-6">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-slate-800">
             Ventas registradas
-            <span className="!ml-2 text-sm font-normal text-slate-400">({ventasFiltradas.length})</span>
+            <span className="ml-2 text-sm font-normal text-slate-400">({ventasFiltradas.length})</span>
           </h2>
           <Button variant="primary" onClick={exportarExcel}>
             Exportar Excel
@@ -418,8 +438,10 @@ export default function Ventas() {
                 {['', '#', 'Fecha', 'Método pago', 'Estado', 'Total', 'Ítems', 'Acciones'].map(h => (
                   <th
                     key={h}
-                    className="!px-4 !py-3 text-left text-xs font-medium
-                      text-slate-500 uppercase tracking-wide whitespace-nowrap"
+                    className=".bg-gradient-to-br from-slate-50 to-slate-100
+                      px-4 py-5 text-left font-semibold text-gray-700
+                      text-[0.9rem] uppercase tracking-[0.5px]
+                      border-b-2 border-slate-200 whitespace-nowrap"
                   >
                     {h}
                   </th>
@@ -429,16 +451,17 @@ export default function Ventas() {
             <tbody>
               {ventasFiltradas.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center !py-8 text-slate-400 text-sm">
+                  <td colSpan={8} className="text-center py-8 text-slate-400 text-sm">
                     No se encontraron ventas
                   </td>
                 </tr>
               ) : (
                 ventasFiltradas.map(v => (
-                  <>
-                    <tr key={v.id_venta} className="hover:bg-slate-50 transition-colors border-b border-slate-100">
-                      {/* Expandir */}
-                      <td className="!px-3 !py-3">
+                  // ✅ Fragment con key — evita warning y re-renders incorrectos
+                  <Fragment key={v.id_venta}>
+                    <tr className="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                      {/* Botón expandir */}
+                      <td className="px-3 py-3">
                         <button
                           onClick={() => setExpandido(expandido === v.id_venta ? null : v.id_venta)}
                           className="w-6 h-6 flex items-center justify-center rounded-md
@@ -449,16 +472,16 @@ export default function Ventas() {
                         </button>
                       </td>
 
-                      <td className="!px-4 !py-3 font-mono text-xs text-slate-500">#{v.id_venta}</td>
-                      <td className="!px-4 !py-3 text-slate-600">{v.fecha_venta?.split('T')[0] ?? '—'}</td>
-                      <td className="!px-4 !py-3 text-slate-600">{v.metodo_pago}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-slate-500">#{v.id_venta}</td>
+                      <td className="px-4 py-3 text-slate-600">{v.fecha_venta?.split('T')[0] ?? '—'}</td>
+                      <td className="px-4 py-3 text-slate-600">{v.metodo_pago}</td>
 
                       {/* Cambio de estado rápido */}
-                      <td className="!px-4 !py-3">
+                      <td className="px-4 py-3">
                         <select
                           value={v.estado}
                           onChange={e => cambiarEstadoVenta(v.id_venta, e.target.value)}
-                          className={`text-xs rounded-lg border !px-2 !py-1 font-medium
+                          className={`text-xs rounded-lg border px-2 py-1 font-medium
                             cursor-pointer transition-colors ${badgeEstado(v.estado)}`}
                         >
                           <option value="Pagado">Pagado</option>
@@ -467,12 +490,12 @@ export default function Ventas() {
                         </select>
                       </td>
 
-                      <td className="!px-4 !py-3 text-slate-800 font-semibold">
+                      <td className="px-4 py-3 text-slate-800 font-semibold">
                         ${Number(v.total).toLocaleString('es-CO')}
                       </td>
-                      <td className="!px-4 !py-3 text-slate-500 text-xs">{v.detalles?.length ?? 0} ítem(s)</td>
+                      <td className="px-4 py-3 text-slate-500 text-xs">{v.detalles?.length ?? 0} ítem(s)</td>
 
-                      <td className="!px-4 !py-3">
+                      <td className="px-4 py-3">
                         <div className="flex gap-2">
                           <Button variant="edit" onClick={() => editarVenta(v)}>
                             <MdEdit />
@@ -486,16 +509,16 @@ export default function Ventas() {
 
                     {/* Fila expandible con ítems */}
                     {expandido === v.id_venta && (
-                      <tr key={`${v.id_venta}-detalle`}>
-                        <td colSpan={8} className="!px-6 !py-3 bg-slate-50 border-b border-slate-100">
+                      <tr>
+                        <td colSpan={8} className="px-6 py-3 bg-slate-50 border-b border-slate-100">
                           {!v.detalles?.length ? (
                             <p className="text-xs text-slate-400">Sin ítems registrados</p>
                           ) : (
                             <div className="flex flex-wrap gap-2">
                               {v.detalles.map((d, idx) => (
                                 <span
-                                  key={d.id_detalle_venta ?? idx}
-                                  className="inline-flex items-center gap-1 !px-3 !py-1
+                                  key={d.id ?? idx}
+                                  className="inline-flex items-center gap-1 px-3 py-1
                                     bg-white border border-slate-200 rounded-lg
                                     text-xs text-slate-600"
                                 >
@@ -513,7 +536,7 @@ export default function Ventas() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 ))
               )}
             </tbody>

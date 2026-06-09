@@ -114,24 +114,24 @@ export default function Proveedores() {
   return (
     <div className="mx-auto">
       {/* HEADER */}
-      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">Proveedores</h1>
+      <h1 className="text-4xl font-bold text-slate-800 px-6 py-6">Proveedores</h1>
 
       {/* FORM (SIN MODAL) */}
-      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
-        <div className="flex justify-between items-center !mb-6">
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-6">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-slate-800">{editing ? 'Editar proveedor' : 'Nuevo proveedor'}</h2>
 
           {editing && <Button onClick={() => setEditing(null)}>Cancelar edición</Button>}
         </div>
 
         <form onSubmit={handleGuardar}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             <input
               name="nit"
               value={form.nit}
               onChange={handleChange}
               placeholder="NIT"
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
 
             <input
@@ -139,7 +139,7 @@ export default function Proveedores() {
               value={form.nombre}
               onChange={handleChange}
               placeholder="Nombre"
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
 
             <input
@@ -147,7 +147,7 @@ export default function Proveedores() {
               value={form.telefono}
               onChange={handleChange}
               placeholder="Teléfono"
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
 
             <input
@@ -155,7 +155,7 @@ export default function Proveedores() {
               value={form.email}
               onChange={handleChange}
               placeholder="Email"
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
 
             <input
@@ -163,11 +163,11 @@ export default function Proveedores() {
               value={form.direccion}
               onChange={handleChange}
               placeholder="Dirección"
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
           </div>
 
-          <div className="flex justify-end !gap-3 !mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <Button variant="cancel" type="button" onClick={limpiar}>
               Limpiar
             </Button>
@@ -203,7 +203,7 @@ export default function Proveedores() {
         >
           <table
             className=" w-full
-        min-w-[900px]
+        .min-w-[900px]
         border-collapse
         overflow-hidden
         rounded-2xl
@@ -215,11 +215,11 @@ export default function Proveedores() {
                   <th
                     key={header}
                     className="
-                bg-gradient-to-br
+                .bg-gradient-to-br
                 from-slate-50
                 to-slate-100
-                !px-4
-                !py-5
+                px-4
+                py-5
                 text-left
                 text-[0.9rem]
                 font-semibold
@@ -243,14 +243,14 @@ export default function Proveedores() {
                   className="  hover:bg-blue-500/5
               transition-colors"
                 >
-                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.nit}</td>
-                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.nombre}</td>
+                  <td className="px-8 py-5 border-b border-slate-100 align-middle">{p.nit}</td>
+                  <td className="px-8 py-5 border-b border-slate-100 align-middle">{p.nombre}</td>
 
-                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.telefono}</td>
-                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.email}</td>
-                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">{p.direccion}</td>
+                  <td className="px-8 py-5 border-b border-slate-100 align-middle">{p.telefono}</td>
+                  <td className="px-8 py-5 border-b border-slate-100 align-middle">{p.email}</td>
+                  <td className="px-8 py-5 border-b border-slate-100 align-middle">{p.direccion}</td>
 
-                  <td className="!px-8 !py-5 border-b border-slate-100 align-middle">
+                  <td className="px-8 py-5 border-b border-slate-100 align-middle">
                     <div className="flex items-center !gap-3">
                       <Button variant="edit" onClick={() => editarProveedor(p)}>
                         <MdEdit />

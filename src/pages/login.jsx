@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
-import '../styles/login.css';
+
 
 
 export default function Login() {
@@ -76,62 +76,158 @@ export default function Login() {
   };
 
   return (
-    <div className="login-wrapper">
-      <div className="login-card">
-        <div className="login-container">
-          <p className="empresa-nombre">Miscelanea Moreno</p>
-          <h1 id="login-name">Inicio de Sesión</h1>
+  <div className="min-h-screen flex items-center justify-center !p-5 bg-slate-100">
+    <div className="w-full max-w-md rounded-3xl bg-white !p-9 shadow-xl border border-slate-200">
+      <div className="flex flex-col gap-14">
+        <p className="text-left text-[20px] font-bold text-[#264d75]">
+          Miscelanea Moreno
+        </p>
 
-          <form className="login-fields" onSubmit={handleLogin}>
-            <label className="login-label" htmlFor="login-email">
-              Email
-            </label>
+        <h1 className="text-center text-4xl font-bold text-[#264d75]">
+          Inicio de Sesión
+        </h1>
+
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={handleLogin}
+        >
+          <label
+            className="text- font-bold text-slate-600"
+            htmlFor="login-email"
+          >
+            Email
+          </label>
+
+          <input
+            id="login-email"
+            type="email"
+            placeholder="Ingresa el Correo"
+            value={correo}
+            onChange={e => setCorreo(e.target.value)}
+            className="
+              w-full
+              rounded-lg
+              border border-slate-300
+              !px-4 !py-3
+              focus:outline-none
+              focus:ring-2
+              focus:ring-blue-300
+              focus:border-blue-400
+            "
+          />
+
+          {errorCorreo && (
+            <p className="text-[15px] text-red-500">
+              {errorCorreo}
+            </p>
+          )}
+
+          <label
+            className=" font-bold text-slate-600"
+            htmlFor="login-password"
+          >
+            Contraseña
+          </label>
+
+          <div className="relative">
             <input
-              id="login-email"
-              type="email"
-              placeholder="Ingresa el Correo"
-              value={correo}
-              onChange={e => setCorreo(e.target.value)}
+              id="login-password"
+              type={verPassword ? 'text' : 'password'}
+              placeholder="Contraseña"
+              value={contraseña}
+              onChange={e => setContraseña(e.target.value)}
+              className="
+                w-full
+                rounded-lg
+                
+                border border-slate-300
+                !px-6 !py-3
+                pr-12
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-300
+                focus:border-blue-400
+              "
             />
-            {errorCorreo && <p style={{ color: 'red', margin: 0 }}>{errorCorreo}</p>}
 
-            <label className="login-label" htmlFor="login-password">
-              Contraseña
-            </label>
-            <div className='password-wrapper'>
-              <input
-                id="login-password"
-                type={verPassword?'text':'password'}
-                placeholder="Contraseña"
-                value={contraseña}
-                onChange={e => setContraseña(e.target.value)}
-              />
-              <span className='toggle-password'
-              onClick={() => setVerPassword(!verPassword)}>
-                {verPassword ? <MdVisibilityOff /> : <MdVisibility />}
-              </span>
-            </div>
-
-            {errorContraseña && <p style={{ color: 'red', margin: '4px 0' }}>{errorContraseña}</p>}
-            {errorServer && <p style={{ color: 'red', margin: '4px 0' }}>{errorServer}</p>}
-
-            <button className="login-button" type="submit">
-              Iniciar Sesión
+            <button
+              type="button"
+              onClick={() => setVerPassword(!verPassword)}
+              className="
+                absolute
+                right-4
+                top-1/2
+                -translate-y-1/2
+                text-xl
+                text-blue-600
+                hover:text-blue-500
+              "
+            >
+              {verPassword ? (
+                <MdVisibilityOff />
+              ) : (
+                <MdVisibility />
+              )}
             </button>
-            {mensajeExito && <p className="p-exito">{mensajeExito}</p>}
-          </form>
-
-          <div style={{ marginTop: 20, fontSize: '0.9rem' }}>
-            <a href="#" style={{ color: '#007BFF', textDecoration: 'none' }}>
-              ¿Olvidaste tu contraseña?
-            </a>
-            <span style={{ margin: '0 10px', color: '#ccc' }}>|</span>
-            <Link to="/registro" style={{ color: '#007BFF', textDecoration: 'none' }}>
-              Registrarse
-            </Link>
           </div>
+
+          {errorContraseña && (
+            <p className="text-[15px] text-red-500">
+              {errorContraseña}
+            </p>
+          )}
+
+          {errorServer && (
+            <p className="text-sm text-red-500">
+              {errorServer}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="
+              mt-5
+              w-full
+              rounded-lg
+              bg-blue-600
+              !px-4
+              !py-3
+              font-bold
+              text-white
+              transition
+              hover:bg-blue-800
+              active:scale-95
+            "
+          >
+            Iniciar Sesión
+          </button>
+
+          {mensajeExito && (
+            <p className="text-center font-bold text-green-600">
+              {mensajeExito}
+            </p>
+          )}
+        </form>
+
+        <div className="mt-3 text-sm">
+          <a
+            href="#"
+            className="text-[15px] text-blue-600 hover:underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </a>
+
+          <span className="mx-7 text-slate-400">|</span>
+
+          <Link
+            to="/registro"
+            className="text-[15px] text-blue-600 hover:underline"
+          >
+            Registrarse
+          </Link>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

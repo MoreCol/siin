@@ -56,8 +56,16 @@ export const updateInvent = async (req: Request, res: Response) => {
 
 export const deleteInvent = async (req: Request, res: Response) => {
   const result = await service.delete(Number(req.params.id));
-  if (result.affected === 0) return res.status(404).json({ message: 'Not found' });
- else  res.status(204);
+
+  if (!result) {
+    return res.status(404).json({
+      message: 'Not found'
+    });
+  }
+
+  return res.json({
+    message: 'Deleted'
+  });
 };
 
 export {};

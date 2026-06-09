@@ -12,42 +12,45 @@ const API_URL = 'http://localhost:3000/api/inventario'; //url del servidor
 export default function Inventario() {
   const [ListaInventarios, setListaInventarios] = useState([]); //
   const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [editingInvent, setEditingInvent] = useState(null); //
   const [loading, setLoading] = useState(true);
   const [productos, setProductos] = useState([]);
   const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
   const [tipoFiltro, setTipoFiltro] = useState('');
 
+  //FILTROS DE LA BUSQUEDA GENERAL
   const [usuarioFiltro, setUsuarioFiltro] = useState('');
-
   const [fechaFiltro, setFechaFiltro] = useState('');
 
   const [usuarios, setUsuarios] = useState([]);
 
+  // RECARGA INVENTARIO + PRODUCTOS Y USUARIOS
   useEffect(() => {
     cargarInventarios();
     cargarProductos();
     cargarUsuarios();
   }, []);
 
+  // CARGA DE DATOS
   const cargarInventarios = async () => {
-    console.log(' Cargando inventarios...');
     try {
       const res = await axios.get(API_URL);
       console.log(' Respuesta inventarios', res.data);
 
       const inventariosFormateados = res.data.map(i => ({
         id_movimiento: i.id_movimiento,
+        numero_factura: i.numero_factura,
         id_producto: i.id_producto,
         producto_descripcion: i.producto?.descripcion || 'Sin producto',
         usuario_nombre: i.usuario ? `${i.usuario.nombre} ${i.usuario.apellido}` : 'Sin usuario',
         id_usuario: i.id_usuario,
         tipo_movimiento: i.tipo_movimiento,
         cantidad: Number(i.cantidad),
+        costo_unitario: Number(i.costo_unitario),
         fecha_movimiento: i.fecha_movimiento || i.fecha_movimiento,
         descripcion: i.descripcion || ''
       }));
+
       setListaInventarios(inventariosFormateados);
     } catch (error) {
       console.error(' Error cargando inventarios:');
@@ -55,7 +58,7 @@ export default function Inventario() {
       setLoading(false);
     }
   };
-
+  //TRAE LOS PRODUCTOS
   const cargarProductos = async () => {
     try {
       const res = await axios.get('http://localhost:3000/api/products/all');
@@ -65,6 +68,17 @@ export default function Inventario() {
     }
   };
 
+  const cargarUsuarios = async () => {
+    try {
+      const res = await axios.get('http://localhost:3000/api/usuarios');
+      setUsuarios(res.data);
+    } catch (error) {
+      console.error('Error cargando usuarios:', error);
+    }
+  };
+  // FILTRADO
+  // POR BUSQUEDA GENERAL + TIPO DE MOVIMIENTO + FECHA
+  //USENEMO EVITA RECALCULAR EN CADA RENDER SI LAS DEPENDENCIAS NO CAMBIARON
   const filteredInventarios = useMemo(() => {
     const q = search.trim().toLowerCase();
 
@@ -72,82 +86,79 @@ export default function Inventario() {
       // búsqueda global
       const coincideBusqueda =
         !q ||
-        [i.producto_descripcion, i.usuario_nombre, i.tipo_movimiento, i.cantidad, i.descripcion].some(v =>
-          String(v).toLowerCase().includes(q)
-        );
+        [
+          i.producto_descripcion,
+          i.usuario_nombre,
+          i.tipo_movimiento,
+          i.cantidad,
+          i.costo_unitario,
+          i.descripcion,
+          i.numero_factura
+        ].some(v => String(v).toLowerCase().includes(q));
 
-      // filtro movimiento
+      // FILTRO MOVIMIENTO
       const coincideMovimiento = !tipoFiltro || i.tipo_movimiento === tipoFiltro;
 
-      // filtro usuario
-      const coincideUsuario = !usuarioFiltro || i.usuario_nombre.toLowerCase().includes(usuarioFiltro.toLowerCase());
+      // FILTRO DE USUARIO
+      //const coincideUsuario = !usuarioFiltro || i.usuario_nombre.toLowerCase().includes(usuarioFiltro.toLowerCase());
 
-      // filtro fecha
+      //FILTRO FECHA
       const fechaMovimiento = new Date(i.fecha_movimiento).toISOString().split('T')[0];
 
       const coincideFecha = !fechaFiltro || fechaMovimiento === fechaFiltro;
 
-      return coincideBusqueda && coincideMovimiento && coincideUsuario && coincideFecha;
+      return coincideBusqueda && coincideMovimiento && coincideFecha;
     });
-  }, [ListaInventarios, search, tipoFiltro, usuarioFiltro, fechaFiltro]);
+  }, [ListaInventarios, search, tipoFiltro, fechaFiltro]);
+
+  // CRUD
 
   const editarInvent = invent => {
     setEditingInvent(invent);
-    setShowModal(true);
   };
 
+  //ELIMINA MOVIMIENTO DEL ESTADO LOCAL Y CONFIRMA CON EL SERVIDOR
   const eliminarInvent = async id_movimiento => {
     if (!confirm('¿Eliminar este movimiento?')) return;
-
     try {
       await axios.delete(`${API_URL}/${id_movimiento}`);
-      setListaInventarios(prev => prev.filter(i => i.id_movimiento !== id_movimiento));
+      console.log('tipo id recibido:', typeof id_movimiento);
+      setListaInventarios(prev => prev.filter(i => Number(i.id_movimiento) !== Number(id_movimiento)));
     } catch (error) {
-      alert('Error eliminando');
-      await cargarInventarios();
+      console.error(error);
+      alert('no se puede eliminar');
     }
   };
-
+  // CREA MOVIMIENTO
   const handleGuardar = async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    console.log('formData');
 
     const inventData = {
+      numero_factura: Number(fd.get('numero_factura')),
       id_producto: Number(fd.get('id_producto')),
       id_usuario: storedUser.id_usuario,
       tipo_movimiento: String(fd.get('tipo_movimiento')).trim(),
       cantidad: Number(fd.get('cantidad')),
+      costo_unitario: Number(fd.get('costo_unitario')),
       fecha_movimiento: fd.get('fecha_movimiento'),
       descripcion: String(fd.get('descripcion')).trim()
     };
 
-    console.log('INVENTDATA PARSED =>', inventData);
-    console.log('VALIDATION =>', {
-      id_producto: Number.isNaN(inventData.id_producto),
-      id_usuario: Number.isNaN(inventData.id_usuario),
-      cantidad: Number.isNaN(inventData.cantidad),
-      tipo_movimiento: inventData.tipo_movimiento,
-      descripcion: inventData.descripcion
-    });
-
-    console.log('VALOR SELECT:', fd.get('id_producto'));
-
     try {
       if (editingInvent) {
         await axios.put(`${API_URL}/${editingInvent.id_movimiento}`, inventData);
-        console.log(' Inventario actualizado');
       } else {
         await axios.post(API_URL, inventData);
       }
 
       await cargarInventarios();
       setEditingInvent(null);
-      setShowModal(false);
+
       e.target.reset();
     } catch (error) {
       console.error('Error al guardar', error);
-      const mensaje =  error.response?.data?.message || 'No se pudo guardar';
+      const mensaje = error.response?.data?.message || 'No se pudo guardar';
 
       alert(mensaje);
     }
@@ -155,19 +166,20 @@ export default function Inventario() {
 
   return (
     <div className=" mx-auto ">
-      <h1 className="text-4xl font-bold text-slate-800 !px-6 !py-6">Inventario</h1>
+      {/*TITULO___________*/}
+      <h1 className="text-4xl font-bold text-slate-600 px-6 py-6">Inventario</h1>
 
-      {/* FORMULARIO */}
-      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm !p-5 !mb-6">
-        <div className="flex justify-between items-center !mb-6">
+      {/* FORMULARIO CREAR / EDITAR ________ */}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-6">
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-semibold text-slate-800">
               {editingInvent ? 'Editar movimiento' : 'Nuevo movimiento'}
             </h2>
 
-            <p className="text-sm text-slate-500 !mt-1">Registro de entradas, salidas y ajustes de inventario</p>
+            <p className="text-sm text-slate-500 mt-1">Registro de entradas, salidas y ajustes de inventario</p>
           </div>
-
+          {/*CANCELA LA EDICION SOLO VISIBLE EN EL ESTE MODO*/}
           {editingInvent && (
             <Button variant="cancel" onClick={() => setEditingInvent(null)}>
               Cancelar edición
@@ -176,26 +188,37 @@ export default function Inventario() {
         </div>
 
         {/* Usuario actual */}
-        <div className="bg-slate-100 border border-slate-200 rounded-2xl !px-4 !py-3 !mb-5">
+        <div className="bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3 mb-5">
           <span className="text-sm text-slate-500">Movimiento realizado por:</span>
 
-          <span className="font-semibold text-slate-800 !ml-2">
+          <span className="font-semibold text-slate-800 ml-2">
             {storedUser.nombre} {storedUser.apellido}
           </span>
         </div>
-
+        {/* FORMULARIO PARA CREACION DE PRODUCTO___________ */}
         <form onSubmit={handleGuardar}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 !gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            <input
+              type="number"
+              name="numero_factura"
+              placeholder="Número de factura"
+              min="1"
+              step="1"
+              defaultValue={editingInvent?.numero_factura || ''}
+              required
+              className="rounded-xl border border-slate-300 px-4 py-3"
+            />
+
             {/* PRODUCTO */}
             <Select
               options={productos.map(p => ({
                 value: p.id,
-                label: `${p.codigo_barras} - ${p.descripcion}`
+                label: `${p.descripcion}`
               }))}
               defaultValue={productos
                 .map(p => ({
                   value: p.id,
-                  label: `${p.codigo_barras} - ${p.descripcion}`
+                  label: `  ${p.descripcion}`
                 }))
                 .find(option => option.value === editingInvent?.id_producto)}
               onChange={selected => {
@@ -206,7 +229,7 @@ export default function Inventario() {
               }}
               placeholder="Buscar producto..."
               isSearchable
-              className="text-sm"
+              className="text-sm text font-semibold"
               styles={{
                 control: base => ({
                   ...base,
@@ -224,11 +247,11 @@ export default function Inventario() {
               name="id_producto"
               defaultValue={editingInvent?.id_producto || ''}
             />
-            {/* TIPO */}
+            {/* TIPO DE MOVIMIENTO*/}
             <select
               name="tipo_movimiento"
               defaultValue={editingInvent?.tipo_movimiento ?? 'entrada'}
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             >
               <option value="entrada">Entrada</option>
 
@@ -246,7 +269,17 @@ export default function Inventario() {
               step="1"
               defaultValue={editingInvent?.cantidad || ''}
               required
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
+            />
+            <input
+              type="number"
+              name="costo_unitario"
+              placeholder="Costo unitario"
+              min="1"
+              step="1"
+              defaultValue={editingInvent?.costo_unitario || ''}
+              required
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
 
             {/* FECHA */}
@@ -259,7 +292,7 @@ export default function Inventario() {
                   : ''
               }
               required
-              className="rounded-xl border border-slate-300 !px-4 !py-3"
+              className="rounded-xl border border-slate-300 px-4 py-3"
             />
 
             {/* DESCRIPCION */}
@@ -269,11 +302,11 @@ export default function Inventario() {
               placeholder="Descripción"
               defaultValue={editingInvent?.descripcion ?? ''}
               required
-              className="md:col-span-2 rounded-xl border border-slate-300 !px-4 !py-3"
+              className="md:col-span-2 rounded-xl border border-slate-300 px-4 py-3"
             />
           </div>
 
-          <div className="flex justify-end gap-3 !mt-6">
+          <div className="flex justify-end gap-3 mt-6">
             <Button type="button" variant="cancel" onClick={() => setEditingInvent(null)}>
               Limpiar
             </Button>
@@ -285,7 +318,7 @@ export default function Inventario() {
         </form>
       </section>
 
-      {/* FILTROS */}
+      {/* FILTROS GENERAL */}
       <FilterInvent
         search={
           <input
@@ -295,6 +328,7 @@ export default function Inventario() {
             className="w-full bg-transparent outline-none"
           />
         }
+        // FILTROS MOVIMIENTO
         movimiento={
           <select
             value={tipoFiltro}
@@ -307,6 +341,7 @@ export default function Inventario() {
             <option value="ajuste">Ajuste</option>
           </select>
         }
+        //FILTRO DE USUARIO (OPCIONAL)
         usuario={
           <select
             value={usuarioFiltro}
@@ -322,6 +357,7 @@ export default function Inventario() {
             ))}
           </select>
         }
+        //FITRO POR FECHA
         fecha={
           <input
             type="date"
@@ -334,44 +370,28 @@ export default function Inventario() {
 
       {/* TABLA */}
       <div className="mt-6">
-        <div
-          className="
-      overflow-x-auto
-      w-full
-      rounded-2xl
-      shadow-[0_4px_20px_rgba(0,0,0,0.08)]
-      min-w-0
-      bg-white
-    "
-        >
+        <div className=" overflow-x-auto  w-full  rounded-2xl  shadow-[0_4px_20px_rgba(0,0,0,0.08)]   min-w-0  bg-white  ">
           <table
-            className="
-        w-full
-        min-w-[900px]
-        border-collapse
-        bg-white
+            className="  w-full  .min-w-[900px] border-collapse  bg-white
       "
           >
+            {/*HEADER*/}
             <thead>
               <tr>
-                {['Producto', 'Usuario', 'Movimiento', 'Cantidad', 'Fecha', 'Descripción', 'Acciones'].map(col => (
+                {[
+                  'No. factura',
+                  'Producto',
+                  'Usuario',
+                  'Movimiento',
+                  'Cantidad',
+                  'Costo unitario',
+                  'Fecha',
+                  'Descripción',
+                  'Acciones'
+                ].map(col => (
                   <th
                     key={col}
-                    className="
-                bg-gradient-to-br
-                from-slate-50
-                to-slate-100
-                !px-4
-                !py-5
-                text-left
-                font-semibold
-                text-gray-700
-                text-[0.9rem]
-                uppercase
-                tracking-[0.5px]
-                border-b-2
-                border-slate-200
-              "
+                    className="  .bg-gradient-to-br  from-slate-50  to-slate-200 px-4 py-5 text-left  font-semibold  text-gray-700  text-[0.9rem]  uppercase  tracking-[0.5px]   border-b-2  border-slate-200 "
                   >
                     {col}
                   </th>
@@ -383,47 +403,26 @@ export default function Inventario() {
               {filteredInventarios.map(m => (
                 <tr
                   key={m.id_movimiento}
-                  className="
-              border-b
-              border-slate-100
-              hover:bg-blue-50/40
-              transition-colors
-              duration-200
-            "
+                  
+                  className="  border-b  border-slate-100  hover:bg-blue-50/40  transition-colors  duration-200 "
                 >
-                  {/* Producto */}
-                  <td className="!px-6 !py-5 text-slate-700">{m.producto_descripcion}</td>
+                  {/* NO FACTURA BODY*/}
+                  <td className="px-6 py-5 text-slate-700">{m.numero_factura}</td>
 
-                  {/* Usuario */}
-                  <td className="!px-6 !py-5">
-                    <span
-                      className="
-                  inline-flex
-                  items-center
-                  rounded-full
-                  bg-slate-100
-                  !px-3
-                  !py-1
-                  text-sm
-                  font-medium
-                  text-slate-700
-                "
-                    >
+                  {/* PRODUCTO BODY*/}
+                  <td className="px-6 py-5 text-slate-700">{m.producto_descripcion}</td>
+
+                  {/* USUARIO BODY*/}
+                  <td className="px-6 py-5">
+                    <span className="  inline-flex  items-center  rounded-full  bg-slate-100  px-3  py-1 text-sm  font-medium  text-slate-700  ">
                       {m.usuario_nombre}
                     </span>
                   </td>
 
-                  {/* Tipo movimiento */}
-                  <td className="!px-6 !py-5">
+                  {/* MOVIMIENTO BODY */}
+                  <td className="px-6 py-5">
                     <span
-                      className={`
-                  inline-flex
-                  items-center
-                  rounded-full
-                  !px-3
-                  !py-1
-                  text-sm
-                  font-semibold
+                      className={`  inline-flex  items-center  rounded-full  px-3  py-1  text-sm font-semibold
                   ${
                     m.tipo_movimiento === 'entrada'
                       ? 'bg-emerald-100 text-emerald-700'
@@ -437,17 +436,19 @@ export default function Inventario() {
                     </span>
                   </td>
 
-                  {/* Cantidad */}
-                  <td className="!px-6 !py-5 font-semibold text-slate-800">{m.cantidad}</td>
+                  {/* CANTIDAD BODY */}
+                  <td className="px-6 py-5 font-semibold text-slate-800">{m.cantidad}</td>
+                  {/* COSTO UNITARIO BODY*/}
+                  <td className="px-6 py-5 font-semibold text-slate-800">{m.costo_unitario}</td>
 
-                  {/* Fecha */}
-                  <td className="!px-6 !py-5 text-slate-600">{new Date(m.fecha_movimiento).toLocaleDateString()}</td>
+                  {/* FECHA BODY*/}
+                  <td className="px-6 py-5 text-slate-600">{new Date(m.fecha_movimiento).toLocaleDateString()}</td>
 
-                  {/* Descripción */}
-                  <td className="!px-6 !py-5 text-slate-600">{m.descripcion}</td>
+                  {/* DDESCRIPCION BODY */}
+                  <td className="px-6 py-5 text-slate-600">{m.descripcion}</td>
 
-                  {/* Acciones */}
-                  <td className="!px-6 !py-5">
+                  {/* ACCIONES BODY */}
+                  <td className="px-6 py-5">
                     <div className="flex gap-2">
                       <Button variant="edit" onClick={() => editarInvent(m)}>
                         <MdEdit />
