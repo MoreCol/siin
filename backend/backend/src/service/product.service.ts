@@ -27,9 +27,6 @@ export class ProductService {
   findOne(id: number) {
     return this.repo.findOneBy({ id: id });
   }
-  async findByCodigoBarras(codigo_barras: string) {
-    return await this.repo.findOneBy({ codigo_barras: codigo_barras });
-  }
 
   async create(data: Partial<Product>) {
     const product = this.repo.create(data);

@@ -58,7 +58,6 @@ export default function Inventario() {
       setLoading(false);
     }
   };
-  
   //TRAE LOS PRODUCTOS
   const cargarProductos = async () => {
     try {

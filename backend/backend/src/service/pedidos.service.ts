@@ -48,13 +48,13 @@ export class PedidoService {
     const pedido = await this.findOne(id);
     if (!pedido) return null;
 
-    //  Actualizar campos del pedido
+    // 1. Actualizar campos del pedido
     pedido.fecha_pedido = data.fecha_pedido ?? pedido.fecha_pedido;
     pedido.fecha_entrega = data.fecha_entrega ?? pedido.fecha_entrega;
     pedido.estado = data.estado ?? pedido.estado;
     await this.pedidoRepo.save(pedido);
 
-    // Si vienen detalles, reemplazar los anteriores
+    // 2. Si vienen detalles, reemplazar los anteriores
     if (data.detalles && data.detalles.length > 0) {
       await this.detalleRepo.delete({ id_pedido: id });
 
@@ -69,7 +69,7 @@ export class PedidoService {
       await this.detalleRepo.save(nuevosDetalles);
     }
 
-    // Retornar pedido actualizado
+    // 3. Retornar pedido actualizado
     return await this.findOne(id);
   }
 

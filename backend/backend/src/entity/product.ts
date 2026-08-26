@@ -12,7 +12,7 @@ export class Product {
   @Column()
   codigo_barras!: string;
 
-  @Column({ nullable: false })
+  @Column()
   descripcion!: string;
 
   @Column()

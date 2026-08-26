@@ -21,7 +21,9 @@ conexion();
 app.use ('/api',productRoutes)
 
 
+
 app.listen(PUERTO, ()=>{
     
+
     console.log(`servidor siin corriendo en puerto ${PUERTO}`)
 });
