@@ -21,10 +21,11 @@ export class Usuario {
   @Column({ select: false })
   password!: string;
 
-  @Column({default:2})
-  id_rol!: number;
+  @Column({ type: 'int', nullable: true})
+  id_rol!: number | null;
+  
 
-  @Column()
+  @Column({default: true})
   estado!: boolean;
 
   @ManyToOne(() => Rol, rol => rol.usuarios)

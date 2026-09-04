@@ -77,14 +77,15 @@ export function AppLayout() {
               <label>Dashboard</label>
             </Link>
 
-            <Link to="/productos" className="sidebar-link">
-              <MdShoppingCart />
-              <label>Productos</label>
-            </Link>
+            
 
             <Link to="/inventarios" className="sidebar-link">
               <MdInventory2 />
-              <label>Inventario</label>
+              <label>Movimientos</label>
+            </Link>
+            <Link to="/productos" className="sidebar-link">
+              <MdShoppingCart />
+              <label>Productos</label>
             </Link>
 
             <Link to="/pedidos" className="sidebar-link">

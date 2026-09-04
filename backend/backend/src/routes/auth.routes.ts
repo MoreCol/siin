@@ -5,7 +5,7 @@ import { TokenValidation } from '../middlewares/isAuthenticated';
 const router = Router();
 const controller = new AuthController();
 
-router.post('/register', controller.register);
+//router.post('/register', controller.register);
 router.post('/login', controller.login);
 
 router.get('/perfil', TokenValidation, (req, res) => {

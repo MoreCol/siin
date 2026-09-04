@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import { isAdmin } from '../middlewares/admin';
+import { TokenValidation } from '../middlewares/isAuthenticated';
+
 import {
   getUsuarios,
   getUsuario,
@@ -9,6 +12,9 @@ import {
 
 
 const router = Router()
+
+router.use(TokenValidation); // ✅ Primero: autenticación
+router.use(isAdmin);         // ✅ Segundo: autorización (Admin)
 
 router.get ('/usuarios',getUsuarios)
 router.get('/usuarios/:id', getUsuario)

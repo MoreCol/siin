@@ -8,7 +8,7 @@ import Proveedores from './pages/proveedores';
 import Inventario from './pages/inventario';
 import Dashboard from './pages/dashboard';
 import Login from './pages/login';
-import Register from './pages/registro';
+//import Register from './pages/registro';
 import { AppLayout } from './layouts/AppLayout';
 import { ProteccionRutas } from './routes/protectedRoute';
 /*import './styles/layout.css';
@@ -20,7 +20,6 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/registro" element={<Register />} />
 
         <Route element={<ProteccionRutas />}>
           <Route element={<AppLayout />}>
@@ -37,3 +36,5 @@ export function App() {
     </BrowserRouter>
   );
 }
+
+       /* <Route path="/registro" element={<Register />} />*/

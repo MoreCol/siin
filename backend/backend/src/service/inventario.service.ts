@@ -14,10 +14,13 @@ export class InventService {
     });
   }
 
-  findOne(id: number) {
-    return this.repo.findOneBy({ id_movimiento: id });
-    //SELECT *FROM PRODUCTOS WHERE = ID
+ findOne(id: number) {
+    return this.repo.findOne({
+      where: { id_movimiento: id },
+      relations: ['producto', 'usuario']
+    });
   }
+
 
   async create(data: Partial<Invent>) {
     const producto = await this.repoProducto.findOneBy({ id: data.id_producto });

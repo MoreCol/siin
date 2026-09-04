@@ -217,17 +217,18 @@ export default function Login() {
             ¿Olvidaste tu contraseña?
           </a>
 
-          <span className="mx-7 text-slate-400">|</span>
+          <span className="mx-7 text-slate-400"></span>
 
-          <Link
-            to="/registro"
-            className="text-[15px] text-blue-600 hover:underline"
-          >
-            Registrarse
-          </Link>
+          
         </div>
       </div>
     </div>
   </div>
 );
 }
+/*<Link
+            to="/registro"
+            className="text-[15px] text-blue-600 hover:underline"
+          >
+            Registrarse
+          </Link>*/

@@ -13,11 +13,28 @@ export const TokenValidation = (req:Request,res:Response, next:NextFunction)=>{
     return res.status(401).json({ message: 'Invalid token format' });
   }
 
-  try{
-    jwt.verify(token,process.env.JWT_SECRET as string);
-    next()
-  } catch(error){
-    return res.status(401).json({message: 'token invalido' })
-  }
+  try {
+        // ✅ Decodificar el token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+            id: number;
+            nombre: string;
+            apellido: string;
+            correo: string;
+            rol: string;
+        };
+
+        // ✅ GUARDAR EL USUARIO EN req.usuario
+        (req as any).usuario = {
+            id: decoded.id,
+            nombre: decoded.nombre,
+            apellido: decoded.apellido,
+            correo: decoded.correo,
+            rol: decoded.rol,
+        };
+
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: '❌ Token inválido o expirado' });
+    }
   
 }

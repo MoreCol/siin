@@ -26,9 +26,10 @@ export default function Inventario() {
 
   // RECARGA INVENTARIO + PRODUCTOS Y USUARIOS
   useEffect(() => {
+    cargarUsuarios();
     cargarInventarios();
     cargarProductos();
-    cargarUsuarios();
+    
   }, []);
 
   // CARGA DE DATOS
@@ -36,13 +37,16 @@ export default function Inventario() {
     try {
       const res = await axios.get(API_URL);
       console.log(' Respuesta inventarios', res.data);
+      const nombreUsuario = storedUser.nombre && storedUser.apellido  ?
+        `${storedUser.nombre} ${storedUser.apellido}` :
+        'Sin usuario';
 
       const inventariosFormateados = res.data.map(i => ({
         id_movimiento: i.id_movimiento,
         numero_factura: i.numero_factura,
         id_producto: i.id_producto,
         producto_descripcion: i.producto?.descripcion || 'Sin producto',
-        usuario_nombre: i.usuario ? `${i.usuario.nombre} ${i.usuario.apellido}` : 'Sin usuario',
+        usuario_nombre: nombreUsuario,
         id_usuario: i.id_usuario,
         tipo_movimiento: i.tipo_movimiento,
         cantidad: Number(i.cantidad),
@@ -58,7 +62,7 @@ export default function Inventario() {
       setLoading(false);
     }
   };
-  
+
   //TRAE LOS PRODUCTOS
   const cargarProductos = async () => {
     try {
@@ -168,17 +172,17 @@ export default function Inventario() {
   return (
     <div className=" mx-auto ">
       {/*TITULO___________*/}
-      <h1 className="text-4xl font-bold text-slate-600 px-6 py-6">Inventario</h1>
+      <h1 className="text-4xl font-bold text-slate-600 px-6 py-6">Movimientos</h1>
 
       {/* FORMULARIO CREAR / EDITAR ________ */}
       <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 mb-6">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-semibold text-slate-800">
-              {editingInvent ? 'Editar movimiento' : 'Nuevo movimiento'}
+              {editingInvent ? 'Editar movimiento' : 'Agregar nuevo movimiento'}
             </h2>
 
-            <p className="text-sm text-slate-500 mt-1">Registro de entradas, salidas y ajustes de inventario</p>
+            
           </div>
           {/*CANCELA LA EDICION SOLO VISIBLE EN EL ESTE MODO*/}
           {editingInvent && (
@@ -189,13 +193,7 @@ export default function Inventario() {
         </div>
 
         {/* Usuario actual */}
-        <div className="bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3 mb-5">
-          <span className="text-sm text-slate-500">Movimiento realizado por:</span>
-
-          <span className="font-semibold text-slate-800 ml-2">
-            {storedUser.nombre} {storedUser.apellido}
-          </span>
-        </div>
+        
         {/* FORMULARIO PARA CREACION DE PRODUCTO___________ */}
         <form onSubmit={handleGuardar}>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -230,7 +228,7 @@ export default function Inventario() {
               }}
               placeholder="Buscar producto..."
               isSearchable
-              className="text-sm text font-semibold"
+              className="text-sm text"
               styles={{
                 control: base => ({
                   ...base,
@@ -404,7 +402,6 @@ export default function Inventario() {
               {filteredInventarios.map(m => (
                 <tr
                   key={m.id_movimiento}
-                  
                   className="  border-b  border-slate-100  hover:bg-blue-50/40  transition-colors  duration-200 "
                 >
                   {/* NO FACTURA BODY*/}
@@ -414,11 +411,7 @@ export default function Inventario() {
                   <td className="px-6 py-5 text-slate-700">{m.producto_descripcion}</td>
 
                   {/* USUARIO BODY*/}
-                  <td className="px-6 py-5">
-                    <span className="  inline-flex  items-center  rounded-full  bg-slate-100  px-3  py-1 text-sm  font-medium  text-slate-700  ">
-                      {m.usuario_nombre}
-                    </span>
-                  </td>
+                  <td className="px-6 py-5">{m.usuario_nombre}</td>
 
                   {/* MOVIMIENTO BODY */}
                   <td className="px-6 py-5">

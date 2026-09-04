@@ -1,4 +1,4 @@
-import { useState } from 'react';
+/*import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
@@ -108,7 +108,7 @@ export default function Register() {
           className="flex flex-col gap-4"
           onSubmit={handleRegister}
         >
-          {/* Nombre */}
+       
           <label
             htmlFor="nombre"
             className=" font-bold text-slate-600"
@@ -132,7 +132,7 @@ export default function Register() {
             </p>
           )}
 
-          {/* Apellido */}
+    
           <label
             htmlFor="apellido"
             className=" font-bold text-slate-600"
@@ -156,7 +156,6 @@ export default function Register() {
             </p>
           )}
 
-          {/* Correo */}
           <label
             htmlFor="correo"
             className="font-bold text-slate-600"
@@ -180,7 +179,7 @@ export default function Register() {
             </p>
           )}
 
-          {/* Contraseña */}
+       
           <label
             htmlFor="password"
             className=" font-bold text-slate-600"
@@ -274,4 +273,4 @@ export default function Register() {
     </div>
   </div>
 );
-}
+*/

@@ -17,9 +17,19 @@ export default function Usuarios() {
     apellido: '',
     correo: '',
     password: '',
-    id_rol: 1,
+    id_rol: 2,
     estado: 'Activo'
   });
+
+ const getHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    };
+  };
+
 
   useEffect(() => {
     cargarUsuarios();
@@ -28,7 +38,7 @@ export default function Usuarios() {
   const cargarUsuarios = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(API_URL,getHeaders());
 
       const data = res.data.map(u => ({
         id_usuario: u.id_usuario,
@@ -97,9 +107,9 @@ export default function Usuarios() {
     };
 
     if (editing) {
-      await axios.put(`${API_URL}/${editing.id_usuario}`, payload);
+      await axios.put(`${API_URL}/${editing.id_usuario}`, payload,getHeaders());
     } else {
-      await axios.post(API_URL, payload);
+      await axios.post(API_URL, payload, getHeaders());
     }
 
     await cargarUsuarios();
@@ -109,7 +119,7 @@ export default function Usuarios() {
   const eliminar = async id => {
     if (!confirm('¿Eliminar usuario?')) return;
 
-    await axios.delete(`${API_URL}/${id}`);
+    await axios.delete(`${API_URL}/${id}`, getHeaders());
     setUsuarios(prev => prev.filter(u => u.id_usuario !== id));
   };
 
