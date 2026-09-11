@@ -9,6 +9,7 @@ import detallePedidoRouter from "./routes/detallePedido.routes";
 import authRoutes from "./routes/auth.routes";
 import ventaRoutes from "./routes/venta.routes";
 import { conexion } from "./config/dataBase";
+import statsRoutes from './routes/stats.routes';
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api", proveedoresRouter);
 app.use("/api", pedidosRouter);
 app.use("/api", detallePedidoRouter);
 app.use("/api", ventaRoutes);
+app.use('/api', statsRoutes);
 
 // IMPORTANTE PARA RENDER
 const PORT = process.env.PORT || 3000;

@@ -8,7 +8,7 @@ import {
   updateProveedor,
   deleteProveedor
 } from '../controllers/proveedores.controllers';
-import { useRevalidator } from 'react-router-dom';
+
 const router = Router();
 
 router.use(TokenValidation);

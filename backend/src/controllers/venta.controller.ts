@@ -38,7 +38,7 @@ export const createVenta = async (req: Request, res: Response) => {
        
         const ventaData = {
             ...req.body,
-            id_usuario: usuario.id  // 
+           id_usuario: Number(usuario.id)
         };
 
         console.log('📦 Datos finales de la venta:', ventaData);

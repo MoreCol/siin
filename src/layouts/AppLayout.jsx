@@ -32,10 +32,10 @@ export function AppLayout() {
     localStorage.removeItem('user'); //borra la información del usuario
     navigate('/', { replace: true }); // lleva al login
   };
-  /*const esAdmin = user?.id_rol === 1;
+  const esAdmin = user?.id_rol === 1;
   const esCajero = user?.id_rol === 2;
 
-  const esInvetario = user?.id_rol === 3;*/
+  const esInventario = user?.id_rol === 3;
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 ">
@@ -85,42 +85,44 @@ export function AppLayout() {
               <label>Dashboard</label>
             </Link>
 
-            <Link to="/inventarios" className="sidebar-link">
-              <MdInventory2 />
-              <label>Movimientos</label>
-            </Link>
+            {(esAdmin || esInventario) && (
+              <Link to="/inventarios" className="sidebar-link">
+                <MdInventory2 />
+                <label>Movimientos</label>
+              </Link>
+            )}
             <Link to="/productos" className="sidebar-link">
               <MdShoppingCart />
               <label>Productos</label>
             </Link>
 
-            <Link to="/pedidos" className="sidebar-link">
-              <MdConfirmationNumber />
-              <label>Pedidos</label>
-            </Link>
+            {(esAdmin || esInventario) && (
+              <Link to="/pedidos" className="sidebar-link">
+                <MdConfirmationNumber />
+                <label>Pedidos</label>
+              </Link>
+            )}
 
-          
+            {(esAdmin || esCajero) && (
               <Link to="/ventas" className="sidebar-link">
                 <MdSell />
                 <label>Ventas</label>
               </Link>
-        
+            )}
 
-            <Link to="/proveedores" className="sidebar-link">
-              <MdLocalShipping />
-              <label>Proveedores</label>
-            </Link>
+            {(esAdmin || esInventario) && (
+              <Link to="/proveedores" className="sidebar-link">
+                <MdLocalShipping />
+                <label>Proveedores</label>
+              </Link>
+            )}
 
-            
-              
-             
+            {esAdmin && (
               <Link to="/usuarios" className="sidebar-link">
                 <MdPeople />
                 <label>Usuarios</label>
               </Link>
-          
-            
-            
+            )}
           </nav>
 
           <button

@@ -8,7 +8,6 @@ export class VentaService {
   private detalleRepo = AppDataSource.getRepository(DetalleVenta);
   private repoProducto = AppDataSource.getRepository(Product);
 
-
   findAll() {
     return this.ventaRepo.find({
       relations: ['detalles'],
@@ -29,9 +28,7 @@ export class VentaService {
 
     // Crear venta
     const venta = this.ventaRepo.create({
-      usuario: {
-        id_usuario: ventaData.id_usuario
-      },
+      id_usuario: Number(ventaData.id_usuario),
       fecha_venta: ventaData.fecha_venta,
       metodo_pago: ventaData.metodo_pago,
       total: ventaData.total,
@@ -72,7 +69,6 @@ export class VentaService {
     return await this.findOne(guardarVenta.id_venta);
   }
 
-
   async findOne(id: number) {
     return await this.ventaRepo.findOne({
       where: { id_venta: id },
@@ -80,12 +76,10 @@ export class VentaService {
     });
   }
 
-
   async update(id: number, data: any) {
     const venta = await this.findOne(id);
 
     if (!venta) return null;
-
 
     venta.id_usuario = data.id_usuario ?? venta.id_usuario;
     venta.fecha_venta = data.fecha_venta ?? venta.fecha_venta;
@@ -119,7 +113,6 @@ export class VentaService {
 
     return await this.findOne(id);
   }
-
 
   async delete(id: number) {
     const detalles = await this.detalleRepo.find({ where: { id_venta: id } });

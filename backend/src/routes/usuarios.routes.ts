@@ -13,12 +13,11 @@ import {
 const router = Router()
 
 router.use(TokenValidation);
-router.use(authorizeRoles(1));
 
-router.get('/usuarios',  getUsuarios)
-router.get('/usuarios/:id', getUsuario)
-router.post('/usuarios', createUsuarios)
-router.put('/usuarios/:id', updateUsuarios)
-router.delete('/usuarios/:id', deleteUsuarios)
+router.get('/usuarios', authorizeRoles(1), getUsuarios);
+router.get('/usuarios/:id', authorizeRoles(1), getUsuario);
+router.post('/usuarios', authorizeRoles(1), createUsuarios);
+router.put('/usuarios/:id', authorizeRoles(1), updateUsuarios);
+router.delete('/usuarios/:id', authorizeRoles(1), deleteUsuarios);
 
 export default router

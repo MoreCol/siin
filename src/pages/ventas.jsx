@@ -39,34 +39,35 @@ export default function Ventas() {
     };
   };
 
-
-
   useEffect(() => {
     cargarVentas();
     cargarProductos();
   }, []);
 
   const cargarVentas = async () => {
-    try {
-      const res = await axios.get(API_VENTAS ,getHeaders());
-      setVentas(res.data);
-    } catch (err) {
-      console.error('Error cargando ventas:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const token = localStorage.getItem('token');
+    console.log('TOKEN:', token); // ← qué token tiene
+    const res = await axios.get(API_VENTAS, getHeaders());
+    setVentas(res.data);
+  } catch (err) {
+    console.error('Error cargando ventas:', err);
+    console.error('Status:', err.response?.status);
+    console.error('Detalle:', err.response?.data); // ← qué dice el backend
+  } finally {
+    setLoading(false);
+  }
+};
 
   const cargarProductos = async () => {
     try {
-      const res = await axios.get(API_PRODUCTOS ,getHeaders());
+      const res = await axios.get(API_PRODUCTOS, getHeaders());
       setProductos(res.data.data ?? res.data);
     } catch (err) {
       console.error('Error cargando productos:', err);
     }
   };
 
- 
   const totalItems = useMemo(() => items.reduce((acc, it) => acc + it.cantidad * it.precio_venta, 0), [items]);
 
   const ventasFiltradas = useMemo(() => {
@@ -93,7 +94,6 @@ export default function Ventas() {
     setEditingVenta(null);
   };
 
-  // ─── items ────────────────────────────────────────────────
   const agregarItem = e => {
     e.preventDefault();
     if (!itemForm.id_producto) return alert('Seleccione un producto');
@@ -118,16 +118,16 @@ export default function Ventas() {
 
   const eliminarItem = id => setItems(prev => prev.filter(i => i.id !== id));
 
-  // ─── CRUD ventas ──────────────────────────────────────────
   const handleGuardar = async () => {
     if (items.length === 0) return alert('Agrega al menos un producto');
     if (!ventaForm.fecha_venta) return alert('Falta la fecha');
     if (!ventaForm.estado) return alert('Falta el estado');
+
    
 
     try {
       const payload = {
-        
+        id_usuario: ventaForm.id_usuario,
         fecha_venta: ventaForm.fecha_venta,
         metodo_pago: ventaForm.metodo_pago,
         estado: ventaForm.estado,
@@ -140,9 +140,9 @@ export default function Ventas() {
       };
 
       if (editingVenta) {
-        await axios.put(`${API_VENTAS}/${editingVenta.id_venta}`, payload,getHeaders());
+        await axios.put(`${API_VENTAS}/${editingVenta.id_venta}`, payload, getHeaders());
       } else {
-        await axios.post(API_VENTAS, payload,getHeaders());
+        await axios.post(API_VENTAS, payload, getHeaders());
       }
 
       // EXACTAMENTE IGUAL A PEDIDOS
@@ -186,7 +186,7 @@ export default function Ventas() {
   const eliminarVenta = async id => {
     if (!confirm('¿Eliminar esta venta?')) return;
     try {
-      await axios.delete(`${API_VENTAS}/${id}`,getHeaders());
+      await axios.delete(`${API_VENTAS}/${id}`, getHeaders());
       setVentas(prev => prev.filter(v => v.id_venta !== id));
     } catch (err) {
       console.error('Error eliminando venta:', err);
@@ -196,7 +196,7 @@ export default function Ventas() {
 
   const cambiarEstadoVenta = async (id_venta, nuevoEstado) => {
     try {
-      await axios.put(`${API_VENTAS}/${id_venta}`, { estado: nuevoEstado });
+      await axios.put(`${API_VENTAS}/${id_venta}`, { estado: nuevoEstado }, getHeaders());
       setVentas(prev => prev.map(v => (v.id_venta === id_venta ? { ...v, estado: nuevoEstado } : v)));
     } catch {
       alert('No se pudo cambiar el estado');
@@ -255,8 +255,6 @@ export default function Ventas() {
               className="rounded-xl border border-slate-300 px-4 py-3"
             />
           </div>
-
-          
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Método de pago</label>

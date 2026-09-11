@@ -7,10 +7,10 @@ import { getVentas, getVenta, createVenta, updateVenta, deleteVenta } from '../c
 const router = Router();
 router.use(TokenValidation);
 
-router.get('/ventas', authorizeRoles(1, 2,3), getVentas);
-router.get('/ventas/:id', authorizeRoles(1, 2), getVenta);
-router.post('/ventas', authorizeRoles(1, 2), createVenta);
-router.put('/ventas/:id', authorizeRoles(1, 2), updateVenta);
+router.get('/ventas', authorizeRoles(1,2), getVentas);
+router.get('/ventas/:id', authorizeRoles(1,2), getVenta);
+router.post('/ventas', authorizeRoles(1,2), createVenta);
+router.put('/ventas/:id', authorizeRoles(1,2), updateVenta);
 
 router.delete('/ventas/:id', authorizeRoles(1,2), deleteVenta);
 
