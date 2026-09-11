@@ -30,7 +30,17 @@ export default function Ventas() {
   const [editingVenta, setEditingVenta] = useState(null);
   const [expandido, setExpandido] = useState(null);
 
-  // ─── carga ────────────────────────────────────────────────
+  const getHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+  };
+
+
+
   useEffect(() => {
     cargarVentas();
     cargarProductos();
@@ -38,7 +48,7 @@ export default function Ventas() {
 
   const cargarVentas = async () => {
     try {
-      const res = await axios.get(API_VENTAS);
+      const res = await axios.get(API_VENTAS ,getHeaders());
       setVentas(res.data);
     } catch (err) {
       console.error('Error cargando ventas:', err);
@@ -49,14 +59,14 @@ export default function Ventas() {
 
   const cargarProductos = async () => {
     try {
-      const res = await axios.get(API_PRODUCTOS);
+      const res = await axios.get(API_PRODUCTOS ,getHeaders());
       setProductos(res.data.data ?? res.data);
     } catch (err) {
       console.error('Error cargando productos:', err);
     }
   };
 
-  // ─── helpers ──────────────────────────────────────────────
+ 
   const totalItems = useMemo(() => items.reduce((acc, it) => acc + it.cantidad * it.precio_venta, 0), [items]);
 
   const ventasFiltradas = useMemo(() => {
@@ -113,11 +123,11 @@ export default function Ventas() {
     if (items.length === 0) return alert('Agrega al menos un producto');
     if (!ventaForm.fecha_venta) return alert('Falta la fecha');
     if (!ventaForm.estado) return alert('Falta el estado');
-    if (!ventaForm.id_usuario) return alert('Falta el usuario');
+   
 
     try {
       const payload = {
-        id_usuario: Number(ventaForm.id_usuario),
+        
         fecha_venta: ventaForm.fecha_venta,
         metodo_pago: ventaForm.metodo_pago,
         estado: ventaForm.estado,
@@ -130,9 +140,9 @@ export default function Ventas() {
       };
 
       if (editingVenta) {
-        await axios.put(`${API_VENTAS}/${editingVenta.id_venta}`, payload);
+        await axios.put(`${API_VENTAS}/${editingVenta.id_venta}`, payload,getHeaders());
       } else {
-        await axios.post(API_VENTAS, payload);
+        await axios.post(API_VENTAS, payload,getHeaders());
       }
 
       // EXACTAMENTE IGUAL A PEDIDOS
@@ -141,9 +151,9 @@ export default function Ventas() {
       await cargarVentas();
       resetForm();
     } catch (error) {
-  console.error('Error guardando venta:', error);
-  console.error('Detalle:', error.response?.data); // ← agrega esta línea
-  alert('No se pudo guardar: ' + JSON.stringify(error.response?.data));
+      console.error('Error guardando venta:', error);
+      console.error('Detalle:', error.response?.data); // ← agrega esta línea
+      alert('No se pudo guardar: ' + JSON.stringify(error.response?.data));
     }
   };
   const editarVenta = v => {
@@ -176,7 +186,7 @@ export default function Ventas() {
   const eliminarVenta = async id => {
     if (!confirm('¿Eliminar esta venta?')) return;
     try {
-      await axios.delete(`${API_VENTAS}/${id}`);
+      await axios.delete(`${API_VENTAS}/${id}`,getHeaders());
       setVentas(prev => prev.filter(v => v.id_venta !== id));
     } catch (err) {
       console.error('Error eliminando venta:', err);
@@ -246,17 +256,7 @@ export default function Ventas() {
             />
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">ID Usuario</label>
-            <input
-              type="number"
-              min="1"
-              placeholder="Ej: 1"
-              value={ventaForm.id_usuario}
-              onChange={e => setVentaForm({ ...ventaForm, id_usuario: e.target.value })}
-              className="rounded-xl border border-slate-300 px-4 py-3"
-            />
-          </div>
+          
 
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Método de pago</label>
@@ -457,7 +457,6 @@ export default function Ventas() {
                 </tr>
               ) : (
                 ventasFiltradas.map(v => (
-                  // ✅ Fragment con key — evita warning y re-renders incorrectos
                   <Fragment key={v.id_venta}>
                     <tr className="hover:bg-slate-50 transition-colors border-b border-slate-100">
                       {/* Botón expandir */}

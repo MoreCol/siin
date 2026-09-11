@@ -17,14 +17,17 @@ export const getInvent = async (req: Request, res: Response) => {
 
 
 export const createInvent = async (req: Request, res: Response) => {
-  console.log('insertDta', req.body);
-
   try {
-    const invent = await service.create(req.body);
-     res.status(201).json(invent);
-   
+    const usuarioToken = (req as any).usuario; // 👈 esta línea DEBE estar aquí, antes de usarla
+
+    const invent = await service.create({
+      ...req.body,
+      id_usuario: usuarioToken.id,
+    });
+
+    res.status(201).json(invent);
   } catch (error: any) {
-        console.error(error);
+    console.error(error);
     res.status(400).json({ message: error.message });
   }
 };

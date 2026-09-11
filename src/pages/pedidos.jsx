@@ -28,6 +28,15 @@ export default function Pedidos() {
   const [editingDetalle, setEditingDetalle] = useState(null);
   const [expandido, setExpandido] = useState(null);
 
+   const getHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    };
+};
+
   // SE EJECTUA ANTES DE CARGAR EL COMPONENTE
   //PARA OBJETER INFORMACIONES ANTES DE MOSTRARLA EN PANTALLA
   useEffect(() => {
@@ -39,8 +48,10 @@ export default function Pedidos() {
   //LUEGO SE RELACIONAN EN EL FRONTEND
   const cargarPedidos = async () => {
     try {
-      //REALIZA AMBAS CONSULTAS EN PARALELO PARA REDUCIR EL TIEMPO DE ESPERA
-      const [resPedidos, resDetalles] = await Promise.all([axios.get(API_PEDIDOS), axios.get(API_DETALLES)]);
+        const [resPedidos, resDetalles] = await Promise.all([
+            axios.get(API_PEDIDOS, getHeaders()),
+            axios.get(API_DETALLES, getHeaders())
+        ]);
       // RELACIONA CADA PEDIDO CON SUS DETALLES
       const pedidosFormateados = resPedidos.data.map(p => {
         // OBETENEMOS DETALLES PERTENECIENTES AL PEDIDO ACTUAL
@@ -73,7 +84,7 @@ export default function Pedidos() {
   //USANDO LOS DETALLES DE CADA PEDIDO
   const cargarProductos = async () => {
     try {
-      const res = await axios.get(API_PRODUCTOS);
+      const res = await axios.get(API_PRODUCTOS ,getHeaders());
       setProductos(res.data.data);
     } catch (error) {
       console.error('Error cargando productos:', error);
@@ -82,7 +93,7 @@ export default function Pedidos() {
   // OBTIENE LA LISTA DE PROVEEDORES REGISTRADOS
   const cargarProveedores = async () => {
     try {
-      const res = await axios.get(API_PROVEEDORES);
+      const res = await axios.get(API_PROVEEDORES ,getHeaders());
       setProveedores(res.data);
     } catch (error) {
       console.error('Error cargando proveedores:', error);
@@ -215,9 +226,9 @@ export default function Pedidos() {
       };
 
       if (editingPedido) {
-        await axios.put(`${API_PEDIDOS}/${editingPedido.id_pedido}`, payload);
+        await axios.put(`${API_PEDIDOS}/${editingPedido.id_pedido}`, payload ,getHeaders());
       } else {
-        await axios.post(API_PEDIDOS, payload);
+        await axios.post(API_PEDIDOS, payload ,getHeaders());
       }
 
       await cargarPedidos(); //  recarga primero
@@ -231,7 +242,7 @@ export default function Pedidos() {
   const eliminarPedido = async id_pedido => {
     if (!confirm('¿Eliminar este pedido?')) return;
     try {
-      await axios.delete(`${API_PEDIDOS}/${id_pedido}`);
+      await axios.delete(`${API_PEDIDOS}/${id_pedido}` ,getHeaders());
       setPedidos(prev => prev.filter(p => p.id_pedido !== id_pedido));
     } catch (error) {
       console.error('Error eliminando:', error);
@@ -241,7 +252,7 @@ export default function Pedidos() {
   // ESTADO DEL PEDIDO
   const cambiarEstadoPedido = async (id_pedido, nuevoEstado) => {
     try {
-      await axios.put(`${API_PEDIDOS}/${id_pedido}`, { estado: nuevoEstado });
+      await axios.put(`${API_PEDIDOS}/${id_pedido}`, { estado: nuevoEstado } ,getHeaders());
       setPedidos(prev => prev.map(p => (p.id_pedido === id_pedido ? { ...p, estado: nuevoEstado } : p)));
     } catch (error) {
       alert('No se pudo cambiar el estado');

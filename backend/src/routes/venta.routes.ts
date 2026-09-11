@@ -1,28 +1,17 @@
+// backend/src/routes/venta.routes.ts
 import { Router } from 'express';
-
-// DEFINIMOS RUTAS
-import {
-  getVentas,
-  getVenta,
-  createVenta,
-  updateVenta,
-  deleteVenta
-} from '../controllers/venta.controller';
-
-// IMPORTAMOS FUNCIONES DEL CONTROLLER
-// PARA RESPONDER EN CADA RUTA
+import { TokenValidation } from '../middlewares/isAuthenticated';
+import { authorizeRoles } from '../middlewares/autorizacion';
+import { getVentas, getVenta, createVenta, updateVenta, deleteVenta } from '../controllers/venta.controller';
 
 const router = Router();
+router.use(TokenValidation);
 
-router.get('/ventas', getVentas);
+router.get('/ventas', authorizeRoles(1, 2,3), getVentas);
+router.get('/ventas/:id', authorizeRoles(1, 2), getVenta);
+router.post('/ventas', authorizeRoles(1, 2), createVenta);
+router.put('/ventas/:id', authorizeRoles(1, 2), updateVenta);
 
-router.get('/ventas/:id', getVenta);
+router.delete('/ventas/:id', authorizeRoles(1,2), deleteVenta);
 
-router.post('/ventas', createVenta);
-
-router.put('/ventas/:id', updateVenta);
-
-router.delete('/ventas/:id', deleteVenta);
-
-// EXPORTAMOS Y LO USAMOS EN app.ts o server.ts
 export default router;

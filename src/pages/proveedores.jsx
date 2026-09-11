@@ -19,7 +19,16 @@ export default function Proveedores() {
     email: '',
     direccion: ''
   });
+  const getHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+  };
 
+ 
   useEffect(() => {
     cargarProveedores();
   }, []);
@@ -27,7 +36,7 @@ export default function Proveedores() {
   const cargarProveedores = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(API_URL ,getHeaders());
 
       const formateados = res.data.map(p => ({
         id_proveedor: p.id_proveedor,
@@ -91,9 +100,9 @@ export default function Proveedores() {
     };
 
     if (editing) {
-      await axios.put(`${API_URL}/${editing.id_proveedor}`, payload);
+      await axios.put(`${API_URL}/${editing.id_proveedor}`, payload,getHeaders());
     } else {
-      await axios.post(API_URL, payload);
+      await axios.post(API_URL, payload,getHeaders());
     }
 
     await cargarProveedores();
@@ -103,7 +112,7 @@ export default function Proveedores() {
   const eliminarProveedor = async id => {
     if (!confirm('¿Eliminar proveedor?')) return;
 
-    await axios.delete(`${API_URL}/${id}`);
+    await axios.delete(`${API_URL}/${id}`,getHeaders());
     setProveedores(prev => prev.filter(p => p.id_proveedor !== id));
   };
 

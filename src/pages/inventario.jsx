@@ -24,29 +24,34 @@ export default function Inventario() {
 
   const [usuarios, setUsuarios] = useState([]);
 
-  // RECARGA INVENTARIO + PRODUCTOS Y USUARIOS
+  const getHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+  };
+
   useEffect(() => {
     cargarUsuarios();
     cargarInventarios();
     cargarProductos();
-    
   }, []);
 
   // CARGA DE DATOS
   const cargarInventarios = async () => {
     try {
-      const res = await axios.get(API_URL);
+      const res = await axios.get(API_URL, getHeaders());
       console.log(' Respuesta inventarios', res.data);
-      const nombreUsuario = storedUser.nombre && storedUser.apellido  ?
-        `${storedUser.nombre} ${storedUser.apellido}` :
-        'Sin usuario';
+      
 
       const inventariosFormateados = res.data.map(i => ({
         id_movimiento: i.id_movimiento,
         numero_factura: i.numero_factura,
         id_producto: i.id_producto,
         producto_descripcion: i.producto?.descripcion || 'Sin producto',
-        usuario_nombre: nombreUsuario,
+        usuario_nombre: i.usuario ? `${i.usuario.nombre} ${i.usuario.apellido}` : 'Sin usuario', // 👈 ahora depende de CADA movimiento
         id_usuario: i.id_usuario,
         tipo_movimiento: i.tipo_movimiento,
         cantidad: Number(i.cantidad),
@@ -66,7 +71,7 @@ export default function Inventario() {
   //TRAE LOS PRODUCTOS
   const cargarProductos = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/products/all');
+      const res = await axios.get('http://localhost:3000/api/products/all', getHeaders());
       setProductos(res.data);
     } catch (error) {
       console.error('Error productos:');
@@ -126,7 +131,7 @@ export default function Inventario() {
   const eliminarInvent = async id_movimiento => {
     if (!confirm('¿Eliminar este movimiento?')) return;
     try {
-      await axios.delete(`${API_URL}/${id_movimiento}`);
+      await axios.delete(`${API_URL}/${id_movimiento}`,getHeaders());
       console.log('tipo id recibido:', typeof id_movimiento);
       setListaInventarios(prev => prev.filter(i => Number(i.id_movimiento) !== Number(id_movimiento)));
     } catch (error) {
@@ -152,9 +157,9 @@ export default function Inventario() {
 
     try {
       if (editingInvent) {
-        await axios.put(`${API_URL}/${editingInvent.id_movimiento}`, inventData);
+        await axios.put(`${API_URL}/${editingInvent.id_movimiento}`, inventData, getHeaders());
       } else {
-        await axios.post(API_URL, inventData);
+        await axios.post(API_URL, inventData , getHeaders());
       }
 
       await cargarInventarios();
@@ -181,8 +186,6 @@ export default function Inventario() {
             <h2 className="text-2xl font-semibold text-slate-800">
               {editingInvent ? 'Editar movimiento' : 'Agregar nuevo movimiento'}
             </h2>
-
-            
           </div>
           {/*CANCELA LA EDICION SOLO VISIBLE EN EL ESTE MODO*/}
           {editingInvent && (
@@ -193,7 +196,7 @@ export default function Inventario() {
         </div>
 
         {/* Usuario actual */}
-        
+
         {/* FORMULARIO PARA CREACION DE PRODUCTO___________ */}
         <form onSubmit={handleGuardar}>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

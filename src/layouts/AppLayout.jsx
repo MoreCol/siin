@@ -32,6 +32,10 @@ export function AppLayout() {
     localStorage.removeItem('user'); //borra la información del usuario
     navigate('/', { replace: true }); // lleva al login
   };
+  /*const esAdmin = user?.id_rol === 1;
+  const esCajero = user?.id_rol === 2;
+
+  const esInvetario = user?.id_rol === 3;*/
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 ">
@@ -54,7 +58,8 @@ export function AppLayout() {
       </header>
 
       <div className="flex flex-1  ">
-        <aside className="  fixed
+        <aside
+          className="  fixed
       top-14
       left-0
       w-full
@@ -66,18 +71,19 @@ export function AppLayout() {
       flex
       items-center
       justify-between
-      px-4 ">
-          <nav className="  flex
+      px-4 "
+        >
+          <nav
+            className="  flex
         items-center
         gap-1
         overflow-x-auto
-        whitespace-nowrap ">
+        whitespace-nowrap "
+          >
             <Link to="/dashboard" className="sidebar-link">
               <MdDashboard />
               <label>Dashboard</label>
             </Link>
-
-            
 
             <Link to="/inventarios" className="sidebar-link">
               <MdInventory2 />
@@ -93,20 +99,28 @@ export function AppLayout() {
               <label>Pedidos</label>
             </Link>
 
-            <Link to="/ventas" className="sidebar-link">
-              <MdSell />
-              <label>Ventas</label>
-            </Link>
+          
+              <Link to="/ventas" className="sidebar-link">
+                <MdSell />
+                <label>Ventas</label>
+              </Link>
+        
 
             <Link to="/proveedores" className="sidebar-link">
               <MdLocalShipping />
               <label>Proveedores</label>
             </Link>
 
-            <Link to="/usuarios" className="sidebar-link">
-              <MdPeople />
-              <label>Usuarios</label>
-            </Link>
+            
+              
+             
+              <Link to="/usuarios" className="sidebar-link">
+                <MdPeople />
+                <label>Usuarios</label>
+              </Link>
+          
+            
+            
           </nav>
 
           <button

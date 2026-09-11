@@ -7,10 +7,9 @@ export class Rol {
   id_rol!: number;
 
   @Column({ length: 50 })
-  nombre!: string;
+  nombre_rol!: string;
 
-  @Column({ default: true })
-  activo!: boolean;
+ 
 
   @OneToMany(() => Usuario, usuario => usuario.rol)
   usuarios!: Usuario[];

@@ -21,6 +21,16 @@ export default function Productos() {
   const [categoriaFiltro, setCategoriaFiltro] = useState('');
   const [disponibilidadFiltro, setDisponibilidadFiltro] = useState('');
 
+
+
+  const getHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    };
+};
   // RECARGA PRODUCTOS CADA QUE SE RECARGA LA PAGINA
   useEffect(() => {
     cargarProductos(paginaActual);
@@ -29,7 +39,8 @@ export default function Productos() {
   // CARGA DE DATOS
   const cargarProductos = async (page = 1) => {
     try {
-      const res = await axios.get(`${API_URL}?page=${page}&limit=${productosPorPagina}`);
+      const res = await axios.get(`${API_URL}?page=${page}&limit=${productosPorPagina}`,
+        getHeaders()  );
 
       // EL BACJEND DEVUELVE NOMBRES EN SNAKE-CASSE Y LOS MAPEAMOS A CAMELCASE
       const productosFormateados = res.data.data.map(p => ({
@@ -112,7 +123,7 @@ export default function Productos() {
     if (!confirm('¿Deseas eliminar este producto?')) return;
 
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${API_URL}/${id}`, getHeaders());
       setListaProductos(prev => prev.filter(p => p.id !== id));
     } catch (error) {
       console.error(error);
@@ -141,9 +152,9 @@ export default function Productos() {
 
     try {
       if (editingProduct) {
-        await axios.put(`${API_URL}/${editingProduct.id}`, productData);
+        await axios.put(`${API_URL}/${editingProduct.id}`, productData,getHeaders() );
       } else {
-        await axios.post(API_URL, productData);
+        await axios.post(API_URL, productData  , getHeaders()  );
       }
 
       await cargarProductos();

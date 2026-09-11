@@ -1,22 +1,26 @@
 import { Router } from 'express';
-//DEFINIMOS RUTAS
+import { authorizeRoles } from '../middlewares/autorizacion';
+import { TokenValidation } from '../middlewares/isAuthenticated';
+
 import {
   getAllProducts,
   getProducts,
   getProduct,
   createProduct,
   updateProduct,
-  deleteProduct,
+  deleteProduct
 } from '../controllers/product.controller';
-//IMPORTAMOS FUNCIONES DEL CONTROLLER PARA RESPONDER EN CADA RUTRA
 
 const router = Router();
-router.get('/products/all', getAllProducts);
-router.delete('/products/:id', deleteProduct);
-router.get('/products', getProducts);
-router.get('/products/:id', getProduct);
-router.post('/products', createProduct);
-router.put('/products/:id', updateProduct);
 
-//EXPORTAMOS Y LO USAMOS EN TEST.JS
+router.use(TokenValidation);
+
+router.get('/products/all', authorizeRoles(1,3,2), getAllProducts);
+router.get('/products', authorizeRoles(1,3,2), getProducts);
+router.get('/products/:id', authorizeRoles(1,3,2), getProduct);
+
+router.post('/products', authorizeRoles(1,3), createProduct);
+router.put('/products/:id', authorizeRoles(1,3), updateProduct);
+router.delete('/products/:id', authorizeRoles(1,3), deleteProduct);
+
 export default router;
