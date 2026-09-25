@@ -29,20 +29,15 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20 text-slate-400 text-sm">
-        Cargando dashboard...
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20 text-slate-400 text-sm">Cargando dashboard...</div>;
   }
 
   return (
     <div className="px-8 py-8  ">
-      <h1 className="text-4xl font-bold text-slate-800 mb-2 ">Dashboard</h1>
+      <h1 className="text-4xl font-bold text-slate-600 px-6 py-6">Dashboard</h1>
 
       {/* TARJETAS */}
       <div className="grid grid-cols-1 sm:grid-cols-3  gap-6 mb-8">
-
         <div className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center gap-4">
           <div className="w-16 h-16 rounded-xl bg-blue-50 flex items-center justify-center">
             <MdShoppingCart className="text-blue-500 text-2xl" />
@@ -104,51 +99,6 @@ export default function Dashboard() {
             <p className="text-3xl font-bold text-slate-800">{stats?.totalUsuarios ?? 0}</p>
           </div>
         </div>
-
-      </div>
-
-      {/* ÚLTIMAS VENTAS */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5">
-        <h2 className="text-lg font-semibold text-slate-800 mb-4">Últimas ventas</h2>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-100">
-              <th className="text-left py-2 px-3 text-slate-400 font-medium text-xs uppercase">#</th>
-              <th className="text-left py-2 px-3 text-slate-400 font-medium text-xs uppercase">Fecha</th>
-              <th className="text-left py-2 px-3 text-slate-400 font-medium text-xs uppercase">Método</th>
-              <th className="text-left py-2 px-3 text-slate-400 font-medium text-xs uppercase">Estado</th>
-              <th className="text-left py-2 px-3 text-slate-400 font-medium text-xs uppercase">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats?.ultimasVentas?.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-6 text-slate-400 text-sm">
-                  No hay ventas registradas
-                </td>
-              </tr>
-            ) : (
-              stats?.ultimasVentas?.map(v => (
-                <tr key={v.id_venta} className="border-b border-slate-50 hover:bg-slate-50">
-                  <td className="py-3 px-3 font-mono text-xs text-slate-400">#{v.id_venta}</td>
-                  <td className="py-3 px-3 text-slate-600">{v.fecha_venta?.split('T')[0] ?? '—'}</td>
-                  <td className="py-3 px-3 text-slate-600">{v.metodo_pago}</td>
-                  <td className="py-3 px-3">
-                    <span className={`text-xs px-2 py-1 rounded-lg font-medium
-                      ${v.estado === 'Pagado' ? 'bg-emerald-50 text-emerald-700' :
-                        v.estado === 'Pendiente' ? 'bg-amber-50 text-amber-700' :
-                        'bg-red-50 text-red-700'}`}>
-                      {v.estado}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 font-semibold text-slate-800">
-                    ${Number(v.total).toLocaleString('es-CO')}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
       </div>
     </div>
   );

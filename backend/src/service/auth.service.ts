@@ -48,6 +48,12 @@ export class AuthService {
   }
 
   async login(correo: string, password: string) {
+    console.log('=== LOGIN ===');
+    console.log('📧 Correo recibido:', JSON.stringify(correo));
+    console.log('🔑 Password recibida:', JSON.stringify(password));
+    console.log('📏 Longitud correo:', correo.length);
+    console.log('📏 Longitud password:', password.length);
+
     const userValid = await this.repo
       .createQueryBuilder('usuario')
       .addSelect('usuario.password')
@@ -55,27 +61,35 @@ export class AuthService {
       .where('usuario.correo = :correo', { correo })
       .getOne();
 
+    console.log('👤 userValid:', userValid);
+
     if (!userValid) {
+      console.log('❌ Usuario no encontrado');
       throw new Error('usuario no encontrado ');
     }
 
-    const passwordValid = await userValid?.comparePassword(password);
+    // 🔥 AGREGAR MÁS LOGS
+    console.log('🔑 Comparando contraseña...');
+    const passwordValid = await userValid.comparePassword(password);
+    console.log('🔑 passwordValid:', passwordValid);
+
     if (!passwordValid) {
+      console.log('❌ Contraseña incorrecta');
       throw new Error('contraseña incorrecta');
     }
-    //const nombreRol = userValid.rol?.nombre_rol;
 
+    // 🔥 AGREGAR MÁS LOGS
+    console.log('✅ Generando token...');
     const token = jwt.sign(
       {
-        id: userValid.id_usuario,
-        nombre: userValid.nombre,
-        apellido: userValid.apellido,
-        correo: userValid.correo,
-        id_rol: userValid.id_rol
+        id: Number(userValid.id_usuario),
+        id_rol: Number(userValid.id_rol)
       },
       process.env.JWT_SECRET as string,
       { expiresIn: '1h' }
     );
+
+    console.log('✅ Token generado:', token.substring(0, 50) + '...');
 
     return {
       user: {

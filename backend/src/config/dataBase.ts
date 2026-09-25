@@ -14,21 +14,21 @@ dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: process.env.DB_HOST || "localhost",
+  host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  synchronize: false,
-  ssl: process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
+  synchronize: true,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  logging: false,
   entities: [Product, Invent, Usuario, Rol, Proveedor, Pedido, DetallePedido, Venta, DetalleVenta]
-})
-export const conexion= async() =>{
+});
+export const conexion = async () => {
   try {
     await AppDataSource.initialize();
-    console.log('Conexion Exitosa => BD');
+    console.log('Conexion Exitosa => BASE DE DATOS');
   } catch (error) {
     console.error(' Error TypeORM:', error);
   }
-}
-
+};

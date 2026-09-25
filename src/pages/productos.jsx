@@ -247,7 +247,7 @@ export default function Productos() {
               />
             </div>
 
-            {/* PRECIO DE COMPRA  */}
+            
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">
                 Se actualiza automáticamente

@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # BASE DE DATOS
+  # ==========================================
+  db:
+    image: postgres:15-alpine
+    container_name: siin-db
+    restart: always
+    environment:
+      POSTGRES_DB: siin
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - siin-network
+
+  # ==========================================
+  # BACKEND
+  # ==========================================
+  backend:
+    build: ./backend
+    container_name: siin-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: admin123
+      DB_NAME: siin
+      JWT_SECRET: secreto_super_seguro
+      PORT: 3000
+    networks:
+      - siin-network
+
+  # ==========================================
+  # FRONTEND
+  # ==========================================
+  frontend:
+    build: .
+    container_name: siin-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - siin-network
+
+# ==========================================
+# VOLÚMENES
+# ==========================================
+volumes:
+  postgres_data:
+
+# ==========================================
+# REDES
+# ==========================================
+networks:
+  siin-network:
+    driver: bridge

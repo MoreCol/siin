@@ -80,11 +80,12 @@ export function AppLayout() {
         overflow-x-auto
         whitespace-nowrap "
           >
-            <Link to="/dashboard" className="sidebar-link">
-              <MdDashboard />
-              <label>Dashboard</label>
-            </Link>
-
+            {esAdmin && (
+              <Link to="/dashboard" className="sidebar-link">
+                <MdDashboard />
+                <label>Dashboard</label>
+              </Link>
+            )}
             {(esAdmin || esInventario) && (
               <Link to="/inventarios" className="sidebar-link">
                 <MdInventory2 />

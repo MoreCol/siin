@@ -13,12 +13,10 @@ import statsRoutes from './routes/stats.routes';
 
 const app = express();
 
+// ✅ DESPUÉS (permite múltiples orígenes)
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://6a189d67d27c500008763f54--incredible-alpaca-6899dc.netlify.app"
-  ],
-  credentials: true
+    origin: true,           // ✅ Permite todos los orígenes (desarrollo)
+    credentials: true
 }));
 
 app.use(express.json());
