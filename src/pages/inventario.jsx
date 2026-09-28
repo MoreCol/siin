@@ -7,7 +7,7 @@ import { Button } from '../components/ui/Button';
 import { FilterInvent } from '../components/ui/filterInvent';
 import Select from 'react-select';
 
-const API_URL = 'http://localhost:3000/api/inventario'; //url del servidor
+const API_URL = '/api/inventario'; //url del servidor
 
 export default function Inventario() {
   const [ListaInventarios, setListaInventarios] = useState([]); //
@@ -71,7 +71,7 @@ export default function Inventario() {
   //TRAE LOS PRODUCTOS
   const cargarProductos = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/products/all', getHeaders());
+      const res = await axios.get('/api/products/all', getHeaders());
       setProductos(res.data);
     } catch (error) {
       console.error('Error productos:');
@@ -80,7 +80,7 @@ export default function Inventario() {
 
   const cargarUsuarios = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/usuarios');
+      const res = await axios.get('/api/usuarios');
       setUsuarios(res.data);
     } catch (error) {
       console.error('Error cargando usuarios:', error);

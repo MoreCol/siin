@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MdInventory2, MdSell, MdPeople, MdWarning, MdShoppingCart, MdPendingActions } from 'react-icons/md';
 
-const API_STATS = 'http://localhost:3000/api/stats';
+const API_STATS = '/api/stats';
 
 const getHeaders = () => {
   const token = localStorage.getItem('token');

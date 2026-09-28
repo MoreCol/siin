@@ -76,7 +76,7 @@ export default function Register() {
     if (!validarCampos()) return;
 
     try {
-      await axios.post('http://localhost:3000/api/auth/register', {
+      await axios.post('/api/auth/register', {
         nombre: form.nombre,
         apellido: form.apellido,
         correo: form.correo,

@@ -6,8 +6,8 @@ import { Button } from '../components/ui/Button';
 import { FilterBar } from '../components/ui/filterBar';
 import Select from 'react-select';
 
-const API_VENTAS = 'http://localhost:3000/api/ventas';
-const API_PRODUCTOS = 'http://localhost:3000/api/products';
+const API_VENTAS = '/api/ventas';
+const API_PRODUCTOS = '/api/products';
 
 const initialVenta = {
   id_usuario: '',

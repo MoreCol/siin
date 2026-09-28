@@ -6,10 +6,10 @@ import { Button } from '../components/ui/Button';
 import { FilterBar } from '../components/ui/filterBar';
 import Select from 'react-select';
 
-const API_PEDIDOS = 'http://localhost:3000/api/pedidos';
-const API_PRODUCTOS = 'http://localhost:3000/api/products';
-const API_PROVEEDORES = 'http://localhost:3000/api/proveedores';
-const API_DETALLES = 'http://localhost:3000/api/detalles';
+const API_PEDIDOS = '/api/pedidos';
+const API_PRODUCTOS = '/api/products';
+const API_PROVEEDORES = '/api/proveedores';
+const API_DETALLES = '/api/detalles';
 
 const initialPedidoForm = { fecha_pedido: '', fecha_entrega: '', estado: 'Pendiente' };
 const initialDetalleForm = { id_producto: '', id_proveedor: '', cantidad: 1 };

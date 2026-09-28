@@ -5,7 +5,7 @@ import { MdEdit, MdDelete, MdAdd, MdChevronLeft, MdChevronRight } from 'react-ic
 import { FilterBar } from '../components/ui/filterBar';
 import { Button } from '../components/ui/Button';
 
-const API_URL = 'http://localhost:3000/api/products';
+const API_URL = '/api/products';
 
 export default function Productos() {
   //ESTAD0

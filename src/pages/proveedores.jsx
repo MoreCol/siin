@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '../components/ui/Button';
 import { FilterBar } from '../components/ui/filterBar';
 
-const API_URL = 'http://localhost:3000/api/proveedores';
+const API_URL = '/api/proveedores';
 
 export default function Proveedores() {
   const [proveedores, setProveedores] = useState([]);

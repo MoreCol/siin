@@ -4,7 +4,7 @@ import { MdEdit, MdDelete } from 'react-icons/md';
 import { Button } from '../components/ui/Button';
 import { FilterBar } from '../components/ui/filterBar';
 
-const API_URL = 'http://localhost:3000/api/usuarios';
+const API_URL = '/api/usuarios';
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
